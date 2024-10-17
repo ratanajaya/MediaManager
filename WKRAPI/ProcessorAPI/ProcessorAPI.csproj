@@ -1,0 +1,220 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Executables\dcraw.exe" />
+    <None Remove="Executables\jpegtran.exe" />
+    <None Remove="Executables\libjpeg-62.dll" />
+    <None Remove="Executables\libturbojpeg.dll" />
+    <None Remove="Executables\optipng.exe" />
+    <None Remove="Executables\pngquant.exe" />
+    <None Remove="Executables\realesrgan\models\realesrgan-x4plus-anime.bin" />
+    <None Remove="Executables\realesrgan\models\realesrgan-x4plus-anime.param" />
+    <None Remove="Executables\realesrgan\models\realesrgan-x4plus.bin" />
+    <None Remove="Executables\realesrgan\models\realesrgan-x4plus.param" />
+    <None Remove="Executables\realesrgan\realesrgan-ncnn-vulkan.exe" />
+    <None Remove="Executables\realesrgan\vcomp140.dll" />
+    <None Remove="Executables\realesrgan\vcomp140d.dll" />
+    <None Remove="Executables\realsr\realsr-ncnn-vulkan.exe" />
+    <None Remove="Executables\realsr\vcomp140.dll" />
+    <None Remove="Executables\waifu2x\models-cunet\noise0_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise0_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise0_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise0_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise1_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise1_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise1_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise1_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise2_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise2_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise2_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise2_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise3_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise3_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\noise3_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\noise3_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-cunet\scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-cunet\scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise0_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise0_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise1_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise1_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise2_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise2_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise3_scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise3_scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\scale2.0x_model.bin" />
+    <None Remove="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\scale2.0x_model.param" />
+    <None Remove="Executables\waifu2x\vcomp140.dll" />
+    <None Remove="Executables\waifu2x\waifu2x-ncnn-vulkan.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Executables\dcraw.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\jpegtran.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\libjpeg-62.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\libturbojpeg.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\optipng.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\pngquant.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\models\realesrgan-x4plus-anime.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\models\realesrgan-x4plus-anime.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\models\realesrgan-x4plus.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\models\realesrgan-x4plus.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\realesrgan-ncnn-vulkan.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\vcomp140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realesrgan\vcomp140d.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realsr\realsr-ncnn-vulkan.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\realsr\vcomp140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise0_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise0_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise0_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise0_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise1_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise1_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise1_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise1_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise2_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise2_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise2_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise2_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise3_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise3_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise3_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\noise3_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-cunet\scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise0_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise0_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise1_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise1_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise2_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise2_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise3_scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\noise3_scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\scale2.0x_model.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\models-upconv_7_anime_style_art_rgb\scale2.0x_model.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\vcomp140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Executables\waifu2x\waifu2x-ncnn-vulkan.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Executables\realsr\models-DF2K\x4.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Executables\realsr\models-DF2K\x4.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Executables\realsr\models-DF2K_JPEG\x4.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Executables\realsr\models-DF2K_JPEG\x4.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

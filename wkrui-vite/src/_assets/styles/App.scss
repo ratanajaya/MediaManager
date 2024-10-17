@@ -1,0 +1,311 @@
+@import "_assets/styles/_variables.module.scss";
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.site-layout-background{
+  padding-top: 25px;
+  padding-left: 10px;
+  padding-right: 10px;
+  min-height: 360px;
+}
+
+.logo {
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+}
+
+.my-editor-label{
+  font-weight: 600;
+  color: $text-main;
+}
+
+.my-album-card-container-1{
+  position: relative; text-align: center
+}
+
+.my-album-card-container-2{
+  height: $album-card-height; width: 100%;
+}
+
+.my-album-card-container-3{
+  display: inline-block; 
+  position: relative;
+  height: $album-card-height; 
+  width: 100%; 
+  max-height: $album-card-height;
+  max-width: $album-card-height;
+  cursor: pointer;
+}
+
+.my-album-card-img{
+  object-fit: contain; height: 100%; width: 100%;
+}
+
+.my-album-card-flag{
+  position: absolute;
+  bottom: 1px;
+  color: white;
+  line-height: 0px;
+  width: 100%;
+  display: flex;
+  //padding-right: 3px;
+}
+
+.my-album-card-tierbar{
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  height: 100%;
+  width: 3px;
+}
+
+.my-album-card-progressbar{
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  width: 100%;
+  height: 3px;
+  background-color: white;
+}
+
+.my-album-card-general{
+  font-size: '12px'; line-height: 1.1; color:$text-main;
+}
+
+.my-album-card-title{
+  font-size: '12px'; line-height: 1.1; color:$text-main; //font-weight: 600;
+  text-align: left;
+  hyphens: auto;
+}
+
+.my-album-card-artist{
+  font-size: '12px'; 
+  line-height: 1.1; 
+  color:$text-sub;
+  text-align: left;
+}
+
+.background-blackout{
+  height: 100%;
+  width: 100%;
+  position: fixed; /* Stay in place */
+  left: 0;
+  top: 0;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  background-color: rgba(0,0,0, 0.8); /* Black w/opacity */
+  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+}
+
+.background-blackout-2{
+  height: 100%;
+  width: 100%;
+  position: fixed; /* Stay in place */
+  left: 0;
+  top: 0;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  background-color: rgba(15, 5, 0, 0.8); /* Black w/opacity */
+  transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+}
+
+.overlay {
+  position: fixed; /* Stay in place */
+  left: 0;
+  top: 0;
+  overflow-x: hidden; /* Disable horizontal scroll */
+}
+
+/* Position the content inside the overlay */
+.overlay-content {
+  position: relative;
+  top: 0%; /* 25% from the top */
+  width: 100%; /* 100% width */
+  text-align: center; /* Centered text/links */
+}
+
+.overlay-button{
+  position: relative;
+  box-sizing: border-box;
+}
+
+.checker-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.checker {
+  color: $text-main;
+}
+
+.checker:nth-child(odd) {
+  width: 25%;
+}
+
+.checker:nth-child(even) {
+  width: 50%;
+}
+
+.headerbutton-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+}
+
+.with-shadow {
+  text-shadow: $text-shadow; /* FF3.5+, Opera 9+, Saf1+, Chrome, IE10 */
+  color: $text-main;
+}
+
+.comparison-table{
+  table-layout: fixed;
+}
+
+.comparison-table tr{
+  border-bottom: 1px solid gray;
+}
+
+.comparison-table tr>td{
+  word-wrap: break-word;
+}
+
+$note-center: rgba(3, 14, 25, 0.8);
+$note-side: rgb(45, 45, 45, 0.2);
+
+.album-note{
+  position: absolute;
+  width: 100%;
+  bottom: 18px;
+  background-image: linear-gradient(90deg, $note-side, $note-center, $note-center, $note-side);
+  text-align: center;
+  color: $text-main;
+}
+
+.album-pagecount{
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  color: $text-main;
+  line-height: 12px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 2px 2px 2px 2px;
+  height: 15px;
+  padding: 0px 1px 0px 1px;
+  text-shadow: $text-shadow;  ; /* FF3.5+, Opera 9+, Saf1+, Chrome, IE10 */
+}
+
+.comment-box{
+  background-color: $bg-l3;
+  border-radius: 6px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 4px 8px 8px 8px;
+  border: 1px solid $highlight-bold;
+}
+
+.comment-box:first-child{
+  margin-top: 0px;
+}
+
+.comment-box:last-child{
+  margin-bottom: 0px;
+}
+
+.comment-author{
+  color: $text-main;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.comment-content{
+  color: $text-main;
+  font-weight: 400;
+  text-align: justify;
+  font-size: 14px;
+}
+
+.comment-timestamp{
+  color: $text-sub;
+  font-weight: 200;
+  font-size: 12px;
+}
+
+.comment-score{
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.divider-2{
+  height: 2px;
+}
+
+.divider-4{
+  height: 4px;
+}
+
+.divider-6{
+  height: 6px;
+}
+
+.divider-8{
+  height: 8px;
+}
+
+.divider-12{
+  height: 12px;
+}
+
+.divider-18{
+  height: 18px;
+}
+
+// ===from dashboard
+
+.overlay-button{
+  position: absolute;
+  height: 100%;
+  width: 100px;
+  top: 0px;
+  cursor: pointer;
+}
+
+.center-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.arrow-right {
+  width: 0; 
+  height: 0; 
+  border-top: 70px solid transparent;
+  border-bottom: 70px solid transparent;
+  border-left: 70px solid rgba(0, 0, 0, 0.3);
+}
+
+.arrow-left {
+  width: 0; 
+  height: 0; 
+  border-top: 70px solid transparent;
+  border-bottom: 70px solid transparent;
+  border-right: 70px solid rgba(0, 0, 0, 0.3);
+}

@@ -1,0 +1,54 @@
+@import "_assets/styles/_variables.module.scss";
+
+.ant-layout{
+  background-color: $bg-l1;
+}
+
+.ant-layout-footer{
+  display: none;
+  background-color: inherit;
+}
+
+.ant-collapse{
+  background-color: inherit;
+}
+
+.ant-collapse> .ant-collapse-item> .ant-collapse-header{
+  padding: 0px;
+}
+
+.ant-collapse-borderless >.ant-collapse-item>.ant-collapse-content>.ant-collapse-content-box{
+  padding: 0px 0px 4px 24px;
+}
+
+.editPanel>.ant-collapse-content>.ant-collapse-content-box{
+  padding: 0px!important;
+}
+
+.ant-form-item{
+  margin-bottom: 8px;
+}
+
+.ant-tree{
+  background: inherit;
+}
+
+.ant-drawer .ant-drawer-body{
+  padding: 24px 0px;
+}
+
+.ant-carousel .slick-dots-top{
+  top: 0px;
+}
+
+.ant-layout-sider-children *span{
+  font-weight: 600;
+}
+
+.ant-tabs-card.ant-tabs-small > .ant-tabs-nav .ant-tabs-tab{
+  padding: 4px 6px;
+}
+
+.ant-tabs-top > .ant-tabs-nav {
+  margin-bottom: 8px;
+}

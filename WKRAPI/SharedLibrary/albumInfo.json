@@ -1,0 +1,81 @@
+{
+  "Categories": [ "Planets", "Galaxies", "Stars" ],
+  "Povs": [ "GroundCamera", "Drone", "Satelite" ],
+  "Focuses": [ "Trees", "Flowers", "Mountains" ],
+  "Others": [ "Forests", "Meadows", "Rivers" ],
+  "Rares": [ "Auroras", "Comets", "Meteors" ],
+  "Qualities": [ "Photography", "Videography", "Storytelling" ],
+  "Characters": [ "Earth", "Mars", "Jupiter", "Saturn" ],
+  "Tier1Artists": [
+    "Ansel Adams",
+    "Astrid Kirchherr",
+    "David Yarrow"
+  ],
+  "Tier2Artists": [
+    "Alfred Stieglitz",
+    "Annie Leibovitz",
+    "Diane Arbus",
+    "Helmut Newton",
+    "Richard Avedon"
+  ],
+  "NUrl": "https://nature.com/api/{0}/comments",
+  "EUrl": "https://environment.com/api/{0}/comments",
+
+  "GenreQueries": [
+    {
+      "Name": "High Priority",
+      "Query": "note=HP",
+      "Group": 0
+    },
+    {
+      "Name": "Star",
+      "Query": "note=🌟",
+      "Group": 0
+    },
+    {
+      "Name": "To Delete",
+      "Query": "special=ToDelete",
+      "Group": 0
+    },
+    {
+      "Name": "Nature General",
+      "Query": "pov=GroundCamera,focus=Trees,other!Rivers,other!Mountains,other!Meadows",
+      "Group": 1
+    },
+    {
+      "Name": "Mountain Scenes",
+      "Query": "pov=Satelite,focus!Mountains, other=Rivers",
+      "Group": 1
+    },
+    {
+      "Name": "Forest Scenes",
+      "Query": "pov=Drone, rare!Auroras,rare!Comets",
+      "Group": 1
+    },
+    {
+      "Name": "River Scenes",
+      "Query": "other=Rivers, rare!Meteors",
+      "Group": 1
+    },
+    {
+      "Name": "Meadow Scenes",
+      "Query": "other=Meadows, rare!Comets",
+      "Group": 2
+    },
+    {
+      "Name": "Flower Fields",
+      "Query": "other=Flowers|Trees, rare!Auroras",
+      "Group": 2
+    },
+    {
+      "Name": "Tropical Scenes",
+      "Query": "pov:GroundCamera,focus:Mountains, other=Trees, rare!Meteors",
+      "Group": 2
+    },
+    {
+      "Name": "Desert Scenes",
+      "Query": "pov:Drone,focus:Mountains, other!Trees, rare!Auroras",
+      "Group": 2
+    }
+  ]
+}

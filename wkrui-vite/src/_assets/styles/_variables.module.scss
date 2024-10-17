@@ -1,0 +1,32 @@
+$text-main: hsla(0, 0%, 100%, 0.8);
+$text-sub: hsla(0, 0%, 100%, 0.6);
+$album-card-height: 150px;
+$highlight-light: hsla(0, 0%, 100%, 0.03);
+$highlight-mid: hsla(0, 0%, 100%, 0.06);
+$highlight-bold: hsla(0, 0%, 100%, 0.12);
+
+$overlay-main: hsla(0, 0%, 0%, 0.5);
+
+$bg-l1: hsla(0, 0%, 5%, 1);
+$bg-l2: hsla(0, 0%, 15%, 1);
+$bg-l3: hsla(0, 0%, 25%, 1);
+
+$bg-faint: hsla(0, 0%, 0%, 0.1);
+
+$text-shadow: -1px -1px 0 hsla(0, 0%, 0%, 0.8),
+1px -1px 0 hsla(0, 0%, 0%, 0.8),
+-1px 1px 0 hsla(0, 0%, 0%, 0.8),
+1px 1px 0 hsla(0, 0%, 0%, 0.8);
+
+:export {
+  textMain: $text-main;
+  textSub: $text-sub;
+  highlightLight: $highlight-light;
+  highlightMid: $highlight-mid;
+  highlightBold: $highlight-bold;
+  bgL1: $bg-l1;
+  bgL2: $bg-l2;
+  bgL3: $bg-l3;
+  bgFaint: $bg-faint;
+  overlayMain: $overlay-main;
+}
