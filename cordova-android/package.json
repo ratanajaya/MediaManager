@@ -1,6 +1,6 @@
 {
-  "name": "com.example.wanker",
-  "displayName": "WankerCordova",
+  "name": "com.example.wkr",
+  "displayName": "wkrcordova",
   "version": "1.0.0",
   "description": "A sample Apache Cordova application that responds to the deviceready event.",
   "main": "index.js",
