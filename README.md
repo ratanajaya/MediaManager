@@ -6,7 +6,7 @@ This repository showcases a multi-project system that integrates advanced AI too
 
 Below is the high-level architecture illustrating how each project interacts within the system.
 
-![System Context Diagram](./SystemContextDiagram.png)
+![System Context Diagram](./_docs/SystemContextDiagram.png)
 
 ## Project Overview
 
