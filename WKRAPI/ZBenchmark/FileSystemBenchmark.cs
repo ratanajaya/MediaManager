@@ -17,7 +17,10 @@ namespace ZBenchmark;
 [RankColumn]
 public class FileSystemBenchmark
 {
-    static AlbumInfoProvider _ai = new AlbumInfoProvider();
+    static AlbumInfoProvider _ai = new AlbumInfoProvider {
+        EUrl = "",
+        NUrl = "",
+    };
     static SystemIOAbstraction _io = new SystemIOAbstraction();
 
     static string source = "Z:\\_Temp\\[Anon] Test Webp";

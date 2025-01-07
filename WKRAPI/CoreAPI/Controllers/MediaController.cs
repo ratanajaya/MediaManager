@@ -11,18 +11,12 @@ namespace CoreAPI.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class MediaController : ControllerBase
+public class MediaController(
+    CoreApiConfig _config,
+    FileRepository _file,
+    CensorshipService _cs
+    ) : ControllerBase
 {
-    CoreApiConfig _config;
-    FileRepository _file;
-    CensorshipService _cs;
-
-    public MediaController(CoreApiConfig config, FileRepository file, CensorshipService cs) {
-        _config = config;
-        _file = file;
-        _cs = cs;
-    }
-
     [HttpGet]
     public IActionResult StreamPage(string libRelPath, LibraryType type) {
         var decensoredLibRelPath = _cs.ConDecensorLibRelMediaPath(libRelPath);

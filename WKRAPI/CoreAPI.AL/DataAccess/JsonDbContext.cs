@@ -32,25 +32,21 @@ public interface IDbContext
 /// WARNING This IDbContext implementation may not be thread safe (untested) and doesn't guarantee ACID transaction. 
 /// If this app will ever be made public, an actual RDBMS implemnentation will be done beforehand.
 /// </summary>
-public class JsonDbContext : IDbContext
+public class JsonDbContext(
+    CoreApiConfig _config,
+    AlbumInfoProvider _ai,
+    ISystemIOAbstraction _io,
+    ILogger _logger,
+    IFlagDbContext _flagDb
+    ) : IDbContext
 {
-    List<AlbumVM> _albumVMs;
-
-    CoreApiConfig _config;
-    AlbumInfoProvider _ai;
-    ISystemIOAbstraction _io;
-    ILogger _logger;
-    IFlagDbContext _flagDb;
-
-    public JsonDbContext(CoreApiConfig config, AlbumInfoProvider ai, ISystemIOAbstraction io, ILogger logger, IFlagDbContext flagDb) {
-        _config = config;
-        _ai = ai;
-        _io = io;
-        _logger = logger;
-        _flagDb = flagDb;
-    }
+    List<AlbumVM>? _albumVMs;
 
     public bool SaveChanges() {
+        if(_albumVMs == null) {
+            return false;
+        }
+
         _io.SerializeToMsgpack(_config.FullAlbumDbPath, _albumVMs);
         _flagDb.UpdateLastModified();
 
@@ -68,15 +64,21 @@ public class JsonDbContext : IDbContext
     }
 
     public void AddAlbumVM(AlbumVM newEntity) {
+        if(_albumVMs == null)
+            throw new Exception("AlbumVMs is null");
+
         _albumVMs.Add(newEntity);
     }
 
     public void RemoveAlbumVM(AlbumVM existing) {
+        if(_albumVMs == null)
+            throw new Exception("AlbumVMs is null");
+
         _albumVMs.Remove(existing);
     }
 
     private async Task<List<AlbumVM>> LoadAlbumVMs(bool rescan = false) {
-        List<AlbumVM> result = null;
+        List<AlbumVM>? result = null;
         if(!rescan) {
             try {
                 result = await _io.DeserializeMsgpack<List<AlbumVM>>(_config.FullAlbumDbPath);
@@ -128,7 +130,10 @@ public class JsonDbContext : IDbContext
                 Name = Path.GetFileName(coverPath),
                 LibRelPath = Path.GetRelativePath(_config.LibraryPath, coverPath)
             }
-            : new FileInfoModel();
+            : new FileInfoModel {
+                Name = "No Cover",
+                LibRelPath = "No Cover"
+            };
     }
 
 

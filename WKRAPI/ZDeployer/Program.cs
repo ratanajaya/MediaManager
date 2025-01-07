@@ -5,6 +5,8 @@ using System.Security.AccessControl;
 using System.Text.Json;
 using ZDeployer;
 
+#pragma warning disable CS8618
+
 Initialize();
 
 var aun = new string[] { "a", "u", "n"};
@@ -28,15 +30,6 @@ if(res.ToLower().Contains("u")) {
         DeployUI(Path.Combine(_appConf.CordovaPath, "www"));
     }
 }
-
-#region LEGACY DASHBOARD
-//if(res.ToLower().Contains("d")) {
-//    WriteTask("Deploying DashboardUI");
-//    BuildDashboardUI();
-//    DeployDashboardUI(Path.Combine(_appConf.UiDeploymentPath, "Dashboard"));
-//    DeployDashboardUI(Path.Combine(_appConf.CordovaPath, "www", "Dashboard"));
-//}
-#endregion
 
 if(res.ToLower().Contains("n")) {
     WriteTask("Deploying Android App");
@@ -62,7 +55,7 @@ public static partial class Program
 
 
     private static void ChangeFilePermissionsToMatchParent(string filePath) {
-        var dirPath = Path.GetDirectoryName(filePath);
+        var dirPath = Path.GetDirectoryName(filePath)!;
 
         var directorySecurity = (new DirectoryInfo(dirPath)).GetAccessControl();
         var fi = new FileInfo(filePath);
@@ -74,13 +67,13 @@ public static partial class Program
     public static void Initialize() {
         var appConfStr = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appConf.json"));
 
-        _appConf = JsonSerializer.Deserialize<AppConf>(appConfStr);
+        _appConf = JsonSerializer.Deserialize<AppConf>(appConfStr)!;
 
         WriteTask($"Starting deployment with configurations bellow:");
 
         foreach(PropertyDescriptor descriptor in TypeDescriptor.GetProperties(_appConf)) {
             string name = descriptor.Name.PadRight(17);
-            object value = descriptor.GetValue(_appConf);
+            object value = descriptor.GetValue(_appConf)!;
             WriteSubTask($"{name} = {value}");
         }
     }
@@ -120,14 +113,14 @@ public static partial class Program
 
         WriteSubTask($"Copying new files to deployment location...");
 
-        var buildLocation = Path.Combine(_appConf.ApiPath, @"CoreAPI\bin\Release\net8.0\publish");
+        var buildLocation = Path.Combine(_appConf.ApiPath, @"CoreAPI\bin\Release\net9.0\publish");
         var buildFiles = Directory.GetFiles(buildLocation, "*.*", SearchOption.AllDirectories);
         var toMoveFiles = buildFiles.Where(a => !excludedFiles.Contains(Path.GetFileName(a))).ToList();
 
         foreach(var f in toMoveFiles) {
             var relativePath = Path.GetRelativePath(buildLocation, f);
             var dstPath = Path.Combine(deployPath, relativePath);
-            var dstDir = Path.GetDirectoryName(dstPath);
+            var dstDir = Path.GetDirectoryName(dstPath)!;
             Directory.CreateDirectory(dstDir);
             File.Move(f, dstPath, true);
 
@@ -187,7 +180,7 @@ public static partial class Program
         foreach(var f in buildFiles) {
             var relativePath = Path.GetRelativePath(buildLocation, f);
             var dstPath = Path.Combine(deployPath, relativePath);
-            var dstDir = Path.GetDirectoryName(dstPath);
+            var dstDir = Path.GetDirectoryName(dstPath)!;
             Directory.CreateDirectory(dstDir);
             File.Move(f, dstPath, true);
 
@@ -196,53 +189,6 @@ public static partial class Program
 
         WriteSubTask("Finished copying files!");
     }
-
-    #region LEGACY DASHBOARD
-    //public static void BuildDashboardUI() {
-    //    var command = $"npm run build --prefix \"{_appConf.DashboardUiPath}\"";
-    //    WriteSubTask($"Executing command \"{command}\"");
-
-    //    Process cmd = new Process();
-
-    //    cmd.StartInfo.FileName = "cmd.exe";
-    //    cmd.StartInfo.RedirectStandardInput = true;
-    //    cmd.StartInfo.RedirectStandardOutput = true;
-    //    cmd.StartInfo.CreateNoWindow = true;
-    //    cmd.StartInfo.UseShellExecute = false;
-
-    //    cmd.Start();
-
-    //    cmd.StandardInput.WriteLine(command);
-    //    cmd.StandardInput.Flush();
-    //    cmd.StandardInput.Close();
-    //    var commandReport = (cmd.StandardOutput.ReadToEnd());
-
-    //    WriteSubTask("Finished building DashboardUI!");
-    //}
-
-    //public static void DeployDashboardUI(string deployPath) {
-    //    Directory.CreateDirectory(deployPath);
-
-    //    WriteSubTask($"Copying new files to deployment location...");
-
-    //    var buildLocation = Path.Combine(_appConf.DashboardUiPath, "build");
-    //    Directory.CreateDirectory(buildLocation);
-    //    var buildFiles = Directory.GetFiles(buildLocation, "*.*", SearchOption.AllDirectories);
-
-    //    foreach(var f in buildFiles) {
-    //        var relativePath = Path.GetRelativePath(buildLocation, f);
-    //        var dstPath = Path.Combine(deployPath, relativePath);
-    //        var dstDir = Path.GetDirectoryName(dstPath);
-    //        Directory.CreateDirectory(dstDir);
-
-    //        File.Copy(f, dstPath, true);
-
-    //        ChangeFilePermissionsToMatchParent(dstPath);
-    //    }
-
-    //    WriteSubTask("Finished copying files!");
-    //}
-    #endregion
 
     public static void BuildAndroidApp() {
         var command = $"cd /d \"{_appConf.CordovaPath}\"&cordova build android";

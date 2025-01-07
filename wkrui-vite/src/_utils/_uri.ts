@@ -229,6 +229,18 @@ const Sleep = () => {
 const Hibernate = () => {
   return `${pc}Hibernate`;
 }
+
+const IpCheck = () => {
+  return `${pc}IpCheck`;
+}
+
+const IpSleep = () => {
+  return `${pc}Sleep`;
+}
+
+const IpShutdown = () => {
+  return `${pc}IpShutdown`;
+}
 //#endregion
 
 //#region ExtraInfo
@@ -334,6 +346,9 @@ const _uri = {
 
   Sleep,
   Hibernate,
+  IpCheck,
+  IpSleep,
+  IpShutdown,
 
   GetComments,
   UpsertSourceAndContent,

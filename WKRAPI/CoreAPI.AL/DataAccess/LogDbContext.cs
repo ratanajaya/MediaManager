@@ -23,9 +23,9 @@ public interface ILogDbContext
     List<Comment> GetComments(string url);
     CorrectionLog GetCorrectionLog(string path);
     List<CorrectionLog> GetCorrectionLogs(List<string> paths);
-    List<CrudLog> GetDeleteLogs(string query);
+    List<CrudLog> GetDeleteLogs(string? query);
     DateTime? GetLastCorrectionTime(string path);
-    TablePaginationModel<CrudLog> GetLogs(int page, int row, string operation, string freeText, DateTime? startDate, DateTime? endDate);
+    TablePaginationModel<CrudLog> GetLogs(int page, int row, string? operation, string? freeText, DateTime? startDate, DateTime? endDate);
     void InsertAlbumCorrection(AlbumCorrection ac);
     void InsertComments(List<Comment> comments);
     void InsertCrudLog(string operation, AlbumVM avm);
@@ -34,27 +34,24 @@ public interface ILogDbContext
     void UpdateCorrectionLog(string path, DateTime? correctionDate, int correctablePageCount);
 }
 
-public class LogDbContext : ILogDbContext
+public class LogDbContext(
+     CoreApiConfig _config
+    ) : ILogDbContext
 {
-    CoreApiConfig _config;
-
-    public LogDbContext(CoreApiConfig config) {
-        _config = config;
-    }
-
-    public List<CrudLog> GetDeleteLogs(string query) {
+    public List<CrudLog> GetDeleteLogs(string? query) {
         var querySegments = Qh.GetQuerySegments(query);
         var now = DateTime.Now;
 
         var deleteLogs = GetLogs(0, 0, CrudLog.Delete, null, null, null);
         var deleteLogsByQuery = deleteLogs.Records
-            .Where(a => Qh.MatchAllQueries(JsonSerializer.Deserialize<Album>(a.AlbumJson), querySegments, new string[0], new string[0], now))
+            //Realistically, a.AlbumJson will never be null for delete logs but always be null for everything else
+            .Where(a => Qh.MatchAllQueries(JsonSerializer.Deserialize<Album>(a.AlbumJson!)!, querySegments, [], [], now))
             .ToList();
 
         return deleteLogsByQuery;
     }
 
-    public TablePaginationModel<CrudLog> GetLogs(int page, int row, string operation, string freeText, DateTime? startDate, DateTime? endDate) {
+    public TablePaginationModel<CrudLog> GetLogs(int page, int row, string? operation, string? freeText, DateTime? startDate, DateTime? endDate) {
         using(var db = new SQLiteConnection(_config.FullLogDbPath)) {
             var lowerFreeText = !string.IsNullOrEmpty(freeText) ? freeText.ToLower() : null;
 
@@ -138,7 +135,7 @@ public class LogDbContext : ILogDbContext
 
     public List<CorrectionLog> GetCorrectionLogs(List<string> paths) {
         using(var db = new SQLiteConnection(_config.FullLogDbPath)) {
-            var entities = db.Table<CorrectionLog>().Where(a => paths.Contains(a.Path)).ToList();
+            var entities = db.Table<CorrectionLog>().Where(a => paths.Contains(a.Path!)).ToList();
             return entities;
         }
     }

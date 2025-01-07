@@ -44,7 +44,7 @@ public class PrimitiveHelperTest
 
     [TestMethod]
     public void CleanListString() {
-        List<string> source = new List<string> { "  apple  ", "banana", "  ", null, "cherry", "  date  " };
+        List<string?> source = new List<string?> { "  apple  ", "banana", "  ", null, "cherry", "  date  " };
         List<string> expected = new List<string> { "apple", "banana", "cherry", "date" };
 
         List<string> result = source.CleanListString();

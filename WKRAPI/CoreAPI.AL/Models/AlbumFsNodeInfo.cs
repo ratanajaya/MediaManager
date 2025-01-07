@@ -4,7 +4,7 @@ namespace CoreAPI.AL.Models;
 
 public class AlbumFsNodeInfo
 {
-    public string Title { get; set; }
-    public string Orientation { get; set; }
-    public List<FsNode> FsNodes { get; set; }
+    public required string Title { get; set; }
+    public required string Orientation { get; set; }
+    public List<FsNode> FsNodes { get; set; } = [];
 }

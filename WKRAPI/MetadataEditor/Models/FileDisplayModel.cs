@@ -5,13 +5,13 @@ namespace MetadataEditor.Models;
 
 public class FileDisplayModel
 {
-    string _fileNameDisplay;
-    string _subDirDisplay;
-    public string FileNameDisplay { get => _fileNameDisplay; set => _fileNameDisplay = Shorten(value, 20); }
-    public string SubDirDisplay { get => _subDirDisplay; set => _subDirDisplay = Shorten(value, 10); }
+    string? _fileNameDisplay;
+    string? _subDirDisplay;
+    public string? FileNameDisplay { get => _fileNameDisplay; set => _fileNameDisplay = Shorten(value, 20); }
+    public string? SubDirDisplay { get => _subDirDisplay; set => _subDirDisplay = Shorten(value, 10); }
 
-    string Shorten(string value, int length) {
-        string result = value.Replace("\\", "");
+    string Shorten(string? value, int length) {
+        string result = (value ?? "").Replace("\\", "");
         if(result.Length < length) {
             string emptyChar = "";
             int emptyCharCount = length - result.Length;
@@ -27,8 +27,8 @@ public class FileDisplayModel
         return result;
     }
 
-    public string UploadStatus { get; set; }
-    public string Path { get; set; }
+    public required string UploadStatus { get; set; }
+    public required string Path { get; set; }
 
     public required FileCorrectionModel CorrectionModel { get; set; }
 

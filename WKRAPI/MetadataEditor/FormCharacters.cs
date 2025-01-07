@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MetadataEditor;
 
+#pragma warning disable CS8618
 [SupportedOSPlatform("windows")]
 public partial class FormCharacters : Form
 {
@@ -75,8 +71,8 @@ public partial class FormCharacters : Form
         }
     }
 
-    private void ButtonCharacters_Click(object sender, EventArgs e) {
-        var selectedTags = formMain.ChangeSelectedCharacters(((Button)sender).Text);
+    private void ButtonCharacters_Click(object? sender, EventArgs e) {
+        var selectedTags = formMain.ChangeSelectedCharacters(((Button)sender!).Text);
         RefreshSelectedCharacterButtons(selectedTags);
     }
 

@@ -2,9 +2,9 @@
 
 public class GoogleCred
 {
-    public string Type { get; set; }
-    public string ProjectId { get; set; }
-    public string PrivateKeyId { get; set; }
-    public string PrivateKey { get; set; }
-    public string ClientEmail { get; set; }
+    public required string Type { get; set; }
+    public required string ProjectId { get; set; }
+    public required string PrivateKeyId { get; set; }
+    public required string PrivateKey { get; set; }
+    public required string ClientEmail { get; set; }
 }

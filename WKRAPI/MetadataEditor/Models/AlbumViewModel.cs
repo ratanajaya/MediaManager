@@ -5,7 +5,7 @@ namespace MetadataEditor.Models;
 
 public class AlbumViewModel
 {
-    public Album Album { get; set; }
-    public string Path { get; set; }
-    public List<string> AlbumFiles { get; set; }
+    public required Album Album { get; set; }
+    public required string Path { get; set; }
+    public List<string> AlbumFiles { get; set; } = [];
 }

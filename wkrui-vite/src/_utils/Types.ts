@@ -304,3 +304,12 @@ export interface OcrResult {
 
   error: string;
 }
+
+export interface Response {
+    success: boolean;
+    message: string | null;
+}
+
+export interface ResponseResult<T> extends Response {
+    result: T;
+}

@@ -5,7 +5,7 @@ import { createContext, useContext } from 'react';
 interface NotifContextInterface {
   notif: {
     info: (title: string, stringContent: string, objContent: any) => void;
-    error: (title: string, stringContent: string, objContent?: any) => void;
+    error: (title: string | null, stringContent: string, objContent?: any) => void;
     apiError: (error: any) => void;
   },
   contextHolder: any;
@@ -33,7 +33,7 @@ export const NotifProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }
 
-  function error(title: string, stringContent: string, objContent?: any) {
+  function error(title: string | null, stringContent: string, objContent?: any) {
     api.error({
       message: (title),
       description: (

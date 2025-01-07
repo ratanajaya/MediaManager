@@ -9,21 +9,14 @@ using System.Text;
 
 namespace CoreAPI.Services;
 
-public class AuthService
+public class AuthService(
+    IMemoryCache _cache,
+    CoreApiConfig _config,
+    CensorshipService _cs,
+    AuthSetting _authSetting
+    )
 {
     const string _cacheKey = "PasswordWrongKey";
-
-    IMemoryCache _cache;    
-    CoreApiConfig _config;
-    CensorshipService _cs;
-    AuthSetting _authSetting;
-
-    public AuthService(IMemoryCache cache, CoreApiConfig config, CensorshipService cs, AuthSetting authSetting) {
-        _cache = cache;
-        _config = config;
-        _cs = cs;
-        _authSetting = authSetting;
-    }
 
     public void DisableRouteOnPublicBuild() {
         if(_config.IsPublic) {

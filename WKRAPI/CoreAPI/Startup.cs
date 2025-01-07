@@ -80,20 +80,20 @@ public class Startup
 
         #region Config & Logging
         var config = new CoreApiConfig {
-            LibraryPath = Configuration.GetValue<string>("LibraryPath"),
-            ScLibraryPath = Configuration.GetValue<string>("ScLibraryPath"),
-            TempPath = Configuration.GetValue<string>("TempPath"),
-            PortableBrowserPath = Configuration.GetValue<string>("PortableBrowserPath"),
-            ProcessorApiUrl = Configuration.GetValue<string>("ProcessorApiUrl"),
+            LibraryPath = Configuration.GetValue<string>("LibraryPath")!,
+            ScLibraryPath = Configuration.GetValue<string>("ScLibraryPath")!,
+            TempPath = Configuration.GetValue<string>("TempPath")!,
+            PortableBrowserPath = Configuration.GetValue<string>("PortableBrowserPath")!,
+            ProcessorApiUrl = Configuration.GetValue<string>("ProcessorApiUrl")!,
 
-            Version = Configuration.GetValue<string>("Version"),
-            BuildType = Configuration.GetValue<string>("BuildType"),
+            Version = Configuration.GetValue<string>("Version")!,
+            BuildType = Configuration.GetValue<string>("BuildType")!,
             AppType = "Api"
         };
         services.AddSingleton(config);
 
-        services.AddSingleton(Configuration.GetSection("GoogleCred").Get<GoogleCred>());
-        var authSetting = Configuration.GetSection("Auth").Get<AuthSetting>();
+        services.AddSingleton(Configuration.GetSection("GoogleCred").Get<GoogleCred>()!);
+        var authSetting = Configuration.GetSection("Auth").Get<AuthSetting>()!;
         services.AddSingleton(authSetting);
 
         var logger = new Func<ILogger>(() => {
@@ -150,7 +150,7 @@ public class Startup
         services.AddSingleton(new Random());
 
 
-        var ai = JsonSerializer.Deserialize<AlbumInfoProvider>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "albumInfo.json")));
+        var ai = JsonSerializer.Deserialize<AlbumInfoProvider>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "albumInfo.json")))!;
         services.AddSingleton<AlbumInfoProvider>(ai);
         #endregion
     }

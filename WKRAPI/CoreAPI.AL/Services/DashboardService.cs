@@ -1,7 +1,6 @@
 ﻿using CoreAPI.AL.DataAccess;
 using CoreAPI.AL.Models.Config;
 using CoreAPI.AL.Models.Dashboard;
-using SharedLibrary;
 using SharedLibrary.Models;
 using System;
 using System.Collections.Generic;
@@ -10,20 +9,12 @@ using System.Text.Json;
 
 namespace CoreAPI.AL.Services;
 
-public class DashboardService
+public class DashboardService(
+    AlbumInfoProvider _ai,
+    ILogDbContext _logDb,
+    LibraryRepository _library
+    )
 {
-    AlbumInfoProvider _ai;
-    ILogDbContext _logDb;
-    LibraryRepository _library;
-    CoreApiConfig _config;
-
-    public DashboardService(AlbumInfoProvider ai, LibraryRepository library, ILogDbContext logDb, CoreApiConfig config) {
-        _ai = ai;
-        _library = library;
-        _logDb = logDb;
-        _config = config;
-    }
-
     public ForceGraphData GetTagForceGraphData() {
         var albums = _library.GetAlbumVMs(0, 0, null);
 
@@ -128,7 +119,7 @@ public class DashboardService
             .ToList();
     }
 
-    public TablePaginationModel<LogDashboardModel> GetLogs(int page, int row, string operation, string freeText, DateTime? startDate, DateTime? endDate) {
+    public TablePaginationModel<LogDashboardModel> GetLogs(int page, int row, string? operation, string? freeText, DateTime? startDate, DateTime? endDate) {
         var data = _logDb.GetLogs(page, row, operation, freeText, startDate, endDate);
 
         return new TablePaginationModel<LogDashboardModel> {
@@ -136,22 +127,22 @@ public class DashboardService
             TotalItem = data.TotalItem,
             Records = data.Records.Select(a => new LogDashboardModel {
                 Id = a.Id.ToString(),
-                AlbumFullTitle = a.AlbumFullTitle,
+                AlbumFullTitle = a.AlbumFullTitle!,
                 CreationTime = a.CreateDate,
-                Operation = a.Operation
+                Operation = a.Operation!
             }).ToList()
         };
     }
 
-    public List<LogDashboardModel> GetDeleteLogs(string query, bool? includeAlbum) {
+    public List<LogDashboardModel> GetDeleteLogs(string? query, bool? includeAlbum) {
         var logs = _logDb.GetDeleteLogs(query);
 
         return logs.Select(a => new LogDashboardModel {
             Id = a.Id.ToString(),
-            AlbumFullTitle = a.AlbumFullTitle,
+            AlbumFullTitle = a.AlbumFullTitle!,
             CreationTime = a.CreateDate,
-            Operation = a.Operation,
-            Album = includeAlbum.GetValueOrDefault() ? JsonSerializer.Deserialize<Album>(a.AlbumJson) : null
+            Operation = a.Operation!,
+            Album = includeAlbum.GetValueOrDefault() ? JsonSerializer.Deserialize<Album>(a.AlbumJson!) : null
         }).ToList();
     }
 }

@@ -12,6 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace SharedLibrary;
+#pragma warning disable CA1416 // Validate platform compatibility
 
 //Very thin wrapper of System.IO
 //Must not require any dependency
@@ -41,9 +42,6 @@ public class SystemIOAbstraction : ISystemIOAbstraction
     public FileInfo GetFileInfo(string path) => new FileInfo(path);
 
     public FileStream OpenRead(string path) => File.OpenRead(path);
-
-    public string GetFirstSuitableFilePath(string folderPath, string[] suitableFileFormats)
-        => Directory.EnumerateFiles(folderPath).FirstOrDefault(file => Array.IndexOf(suitableFileFormats, Path.GetExtension(file)) > -1);
 
     public List<string> GetSuitableFilePaths(string folderPath, string[] suitableFileFormats, int depth) 
         => Directory.EnumerateFiles(folderPath, "*.*", (depth > 0 ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
@@ -75,12 +73,12 @@ public class SystemIOAbstraction : ISystemIOAbstraction
 
     #region COMMAND
     public Task WriteFile(string path, byte[] file) {
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         return File.WriteAllBytesAsync(path, file);
     }
 
     public async Task WriteAllText(string path, string content) {
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, content);
     }
 
@@ -93,7 +91,7 @@ public class SystemIOAbstraction : ISystemIOAbstraction
     }
 
     public void MoveFile(string currentPath, string newPath) {
-        Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
         File.Move(currentPath, newPath, true);
     }
 
@@ -134,38 +132,31 @@ public class SystemIOAbstraction : ISystemIOAbstraction
         }
     }
 
-    public T DeserializeFileSync<T>(string path) {
-        byte[] fileBytes = File.ReadAllBytes(path);
-        return JsonSerializer.Deserialize<T>(fileBytes);
-    }
-
-    public T DeserializeJsonSync<T>(string path) {
+    public T? DeserializeJsonSync<T>(string path) {
         if(!File.Exists(path)) {
-            return default(T);
+            return default;
         }
 
-        byte[] fileBytes = File.ReadAllBytes(path);
-        return JsonSerializer.Deserialize<T>(fileBytes);
+        return JsonSerializer.Deserialize<T>(File.ReadAllBytes(path));
     }
 
-    public async Task<T> DeserializeJson<T>(string path) {
+    public async Task<T?> DeserializeJson<T>(string path) {
         if(!File.Exists(path)) {
-            return default(T);
+            return default;
         }
 
-        byte[] fileBytes = await File.ReadAllBytesAsync(path);
-        return JsonSerializer.Deserialize<T>(fileBytes);
+        return JsonSerializer.Deserialize<T>(await File.ReadAllBytesAsync(path));
     }
 
-    public async Task<T> DeserializeJsonCamelCase<T>(string path) {
+    public async Task<T?> DeserializeJsonCamelCase<T>(string path) {
         byte[] fileBytes = await File.ReadAllBytesAsync(path);
 
         return JsonSerializer.Deserialize<T>(fileBytes, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     }
 
-    public async Task<T> DeserializeMsgpack<T>(string path) {
+    public async Task<T?> DeserializeMsgpack<T>(string path) {
         if(!File.Exists(path)) {
-            return default(T);
+            return default;
         }
 
         byte[] fileBytes = await File.ReadAllBytesAsync(path);
@@ -173,12 +164,12 @@ public class SystemIOAbstraction : ISystemIOAbstraction
     }
 
     public void SerializeToJson(string path, dynamic item) {
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, JsonSerializer.Serialize(item));
     }
 
     public void SerializeToMsgpack(string path, dynamic item) {
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         byte[] fileBytes = MessagePackSerializer.Serialize(item, ContractlessStandardResolver.Options);
         File.WriteAllBytes(path, fileBytes);
     }

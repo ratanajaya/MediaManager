@@ -17,32 +17,22 @@ using SharedLibrary.Models;
 
 namespace CoreAPI.AL.Services;
 
-public class FileRepository
+public class FileRepository(
+    CoreApiConfig _config,
+    AlbumInfoProvider _ai,
+    ISystemIOAbstraction _io,
+    IDbContext _db,
+    LibraryRepository _lib,
+    ILogger _logger,
+    MediaProcessor _media
+    )
 {
-    CoreApiConfig _config;
-    AlbumInfoProvider _ai;
-    ISystemIOAbstraction _io;
-    IDbContext _db;
-    LibraryRepository _lib;
-    ILogger _logger;
-    MediaProcessor _media;
-
-    public FileRepository(CoreApiConfig config, AlbumInfoProvider ai, ISystemIOAbstraction io, IDbContext db, LibraryRepository lib, ILogger logger, MediaProcessor media) {
-        _config = config;
-        _ai = ai;
-        _io = io;
-        _db = db;
-        _lib = lib;
-        _logger = logger;
-        _media = media;
-    }
-
     #region QUERY
     public async Task<string> GetFullCachedPath(string libRelOriginalPagePath, int maxSize, LibraryType type) {
         try {
             var fullCachedPagePath = Path.Combine(_config.GetCachePath(type), maxSize.ToString(), libRelOriginalPagePath + ".jpg");
             if(_io.IsFileExists(fullCachedPagePath)) { return fullCachedPagePath; }
-            _io.CreateDirectory(Path.GetDirectoryName(fullCachedPagePath));
+            _io.CreateDirectory(Path.GetDirectoryName(fullCachedPagePath)!);
 
             var libPath = _config.GetLibraryPath(type);
             var fullOriginalPagePath = Path.Combine(libPath, libRelOriginalPagePath);
@@ -117,7 +107,7 @@ public class FileRepository
                 //check if fs.AlRelPath is not located in a directory
                 for(int i = 0; i < subDirNodes.Count; i++) {
                     if(fs.AlRelPath.StartsWith(subDirNodes[i].AlRelPath)) {
-                        subDirNodes[i].DirInfo.Childs.Add(fs);
+                        subDirNodes[i].DirInfo!.Childs.Add(fs);
                         return;
                     }
                 }
@@ -181,7 +171,10 @@ public class FileRepository
         FileInfoModel GetPageInfoByPath(string albumPath, int pageIndex) {
             var allFilePaths = _io.GetSuitableFilePathsWithNaturalSort(Path.Combine(_config.LibraryPath, albumPath), _ai.SuitableFileFormats, 1);
             if(allFilePaths.Count == 0) {
-                return new FileInfoModel();
+                return new FileInfoModel { 
+                    Name = "No Cover",
+                    LibRelPath = "No Cover"
+                };
             }
             var targetFullPath = allFilePaths[pageIndex];
 

@@ -2,6 +2,6 @@
 
 public class ProcessorApiConfig
 {
-    public string TemDirPath { get; set; }
+    public required string TemDirPath { get; set; }
     public int? TileSize { get; set; }
 }

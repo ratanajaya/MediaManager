@@ -13,16 +13,11 @@ using Qh = CoreAPI.AL.Helpers.QueryHelpers;
 
 namespace CoreAPI.Services;
 
-public class CensorshipService
+public class CensorshipService(
+    IFlagDbContext _flagDb,
+    CoreApiConfig _config
+    )
 {
-    private IFlagDbContext _flagDb;
-    private CoreApiConfig _config;
-
-    public CensorshipService(CoreApiConfig config, IFlagDbContext flagdb) {
-        _config = config;
-        _flagDb = flagdb;
-    }
-
     #region Public Db Methods
     public bool IsAccessible() {
         return _flagDb.IsAccessible();
@@ -120,6 +115,7 @@ public class CensorshipService
 
         var result = new AlbumFsNodeInfo {
             Title = source.Title.DiskCensor(),
+            Orientation = source.Orientation,
             FsNodes = CensorNewFsNodeRecursive(source.FsNodes)
         };
 
@@ -219,7 +215,9 @@ public class CensorshipService
         return Qh.CombineQuerySegments(segments);
     }
 
-    private FileInfoModel CensorFileInfo(FileInfoModel source) {
+    private FileInfoModel? CensorFileInfo(FileInfoModel? source) {
+        if(source == null) return null;
+
         return new FileInfoModel { 
             Name = _config.DefaultThumbnailName,
             LibRelPath = _config.FullDefaultThumbnailPath,
@@ -253,7 +251,7 @@ public class CensorshipService
 
     private List<AlbumCardModel> CensorAlbumCardModels(List<AlbumCardModel> source, Func<string, string> pathCensorer) {
         return source.Select(a => new AlbumCardModel {
-            ArtistDisplay = a.ArtistDisplay.DiskCensor(),
+            ArtistDisplay = a.ArtistDisplay?.DiskCensor(),
             Title = a.Title.DiskCensor(),
             Path = pathCensorer(a.Path),
             CoverInfo = CensorFileInfo(a.CoverInfo),

@@ -217,7 +217,7 @@ const _helper = {
     return extension === ".webm" || extension === ".mp4";
   },
 
-  getStyleByRotation2: (isRotated: boolean) => {
+  getStyleByRotation2: (isRotated: boolean): StyleByRotation => {
     return isRotated ? {
       transformStyle: {
         transform: "translatex(calc(50vw - 50%)) translatey(calc(50vh - 50%)) rotate(270deg)",
@@ -291,3 +291,13 @@ const _helper = {
 };
 
 export default _helper;
+
+export interface StyleByRotation {
+  transformStyle: {
+      transform?: string;
+  };
+  vwvhStyle: {
+      width: string;
+      height: string;
+  };
+}

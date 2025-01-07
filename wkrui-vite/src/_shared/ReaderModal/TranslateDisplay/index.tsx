@@ -31,26 +31,51 @@ export default function TranslateDisplay(props:{
   const { axiosA } = useAuth();
   
   const handleCompleteCrop = (crop: Crop) => {
-    if(crop == null || imgRef == null) return;
+    if (!crop || !imgRef.current) return;
+    const img = imgRef.current;
 
-    const imgCurrent = imgRef.current!;
+    // Get container and image dimensions
+    const containerWidth = img.clientWidth;
+    const containerHeight = img.clientHeight;
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+
+    // Calculate actual displayed image dimensions (accounting for object-fit: contain)
+    const imageAspectRatio = naturalWidth / naturalHeight;
+    const containerAspectRatio = containerWidth / containerHeight;
     
+    const [ renderedHeight, renderedWidth ] = imageAspectRatio > containerAspectRatio 
+      ? [ containerWidth / imageAspectRatio, containerWidth ]
+      : [ containerHeight, containerHeight * imageAspectRatio ];
+
+    // Calculate letterboxing offsets
+    const xOffset = (containerWidth - renderedWidth) / 2;
+    const yOffset = (containerHeight - renderedHeight) / 2;
+
+    // Calculate scaling factors
+    const scaleX = naturalWidth / renderedWidth;
+    const scaleY = naturalHeight / renderedHeight;
+
+    // Create canvas with crop dimensions
     const canvas = document.createElement('canvas');
-    const scaleX = imgCurrent.naturalWidth / imgCurrent.width;
-    const scaleY = imgCurrent.naturalHeight / imgCurrent.height;
-    
     canvas.width = crop.width;
     canvas.height = crop.height;
-
-    const ctx = canvas.getContext('2d');
-    if(!ctx) return;
     
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Calculate actual crop coordinates in original image space
+    const sourceX = (crop.x - xOffset) * scaleX;
+    const sourceY = (crop.y - yOffset) * scaleY;
+    const sourceWidth = crop.width * scaleX;
+    const sourceHeight = crop.height * scaleY;
+
     ctx.drawImage(
-      imgCurrent,
-      crop.x * scaleX,
-      crop.y * scaleY,
-      crop.width * scaleX,
-      crop.height * scaleY,
+      img,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
       0,
       0,
       crop.width,
@@ -62,7 +87,7 @@ export default function TranslateDisplay(props:{
       if(!blob) return;
 
       setLoading(true);
-      //post blob as Iformfile
+      
       const formData = new FormData();
       formData.append('file', blob, 'image.jpg');
       axiosA.post<OcrResult>(_uri.TranscribeAndTranslateImage(), formData, {})

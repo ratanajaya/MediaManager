@@ -6,15 +6,10 @@ using System.Linq;
 using CoreAPI.AL.Models.Config;
 
 namespace CoreAPI.AL.Services;
-public class GoogleService
+public class GoogleService(
+    GoogleCred _googleCred
+    )
 {
-    GoogleCred _googleCred;
-
-    public GoogleService(GoogleCred googleCred)
-    {
-        _googleCred = googleCred;
-    }
-
     public string TranslateDetectLanguageToEnglish(string source) {
         var credential = GoogleCredential.FromServiceAccountCredential(
             new ServiceAccountCredential(

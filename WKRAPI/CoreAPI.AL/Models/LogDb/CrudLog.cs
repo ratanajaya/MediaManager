@@ -15,10 +15,10 @@ public class CrudLog
 
     [PrimaryKey, AutoIncrement]
     public long Id { get; set; }
-    public string Operation { get; set; }
-    public string AlbumPath { get; set; }
-    public string AlbumFullTitle { get; set; }
-    public string AlbumJson { get; set; }
+    public string? Operation { get; set; }
+    public string? AlbumPath { get; set; }
+    public string? AlbumFullTitle { get; set; }
+    public string? AlbumJson { get; set; }
     public DateTime CreateDate { get; set; }
     public DateTime? UpdateDate { get; set; }
 

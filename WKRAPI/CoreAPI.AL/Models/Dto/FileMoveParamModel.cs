@@ -4,14 +4,14 @@ namespace CoreAPI.AL.Models.Dto;
 
 public class FileMoveParamModel
 {
-    public FileMoveModel Src { get; set; }
-    public FileMoveModel Dst { get; set; }
+    public required FileMoveModel Src { get; set; }
+    public required FileMoveModel Dst { get; set; }
     public bool Overwrite { get; set; }
 }
 public class FileMoveModel
 {
-    public string AlbumPath { get; set; }
-    public string AlRelPath { get; set; }
+    public required string AlbumPath { get; set; }
+    public required string AlRelPath { get; set; }
     public string LibRelPath
     {
         get

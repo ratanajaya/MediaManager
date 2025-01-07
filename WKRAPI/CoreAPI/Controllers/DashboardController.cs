@@ -9,16 +9,11 @@ namespace CoreAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]/[action]")]
-public class DashboardController : ControllerBase
+public class DashboardController(
+    CensorshipService _cs,
+    DashboardService _dash
+    ) : ControllerBase
 {
-    CensorshipService _cs;
-    DashboardService _dash;
-
-    public DashboardController(CensorshipService cs, DashboardService dash) {
-        _cs = cs;
-        _dash = dash;
-    }
-
     [HttpGet]
     public IActionResult GetQueryTierFractions(string query) {
         var decensoredQuery =_cs.ConDecensorQuery(query);
@@ -36,7 +31,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetLogs(int page, int row, string operation, string freeText, DateTime? startDate, DateTime? endDate) {
+    public IActionResult GetLogs(int page, int row, string? operation, string? freeText, DateTime? startDate, DateTime? endDate) {
         var result = _dash.GetLogs(page, row, operation, freeText, startDate, endDate);
 
         result.Records = _cs.ConCensorLogDashboardModels(result.Records);
@@ -44,7 +39,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetDeleteLogs(string query, bool? includeAlbum) {
+    public IActionResult GetDeleteLogs(string? query, bool? includeAlbum) {
         var data = _dash.GetDeleteLogs(query, includeAlbum);
 
         return Ok(_cs.ConCensorLogDashboardModels(data));

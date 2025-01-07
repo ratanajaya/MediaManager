@@ -17,16 +17,11 @@ public interface IFlagDbContext
     void UpdateLastModified();
 }
 
-public class FlagDbContext : IFlagDbContext
+public class FlagDbContext(
+    CoreApiConfig _config,
+    IMemoryCache _cache
+    ) : IFlagDbContext
 {
-    CoreApiConfig _config;
-    private IMemoryCache _cache;
-
-    public FlagDbContext(CoreApiConfig config, IMemoryCache cache) {
-        _config = config;
-        _cache = cache;
-    }
-
     private void InsertUpdateKeyValue(string key, string val) {
         using(var db = new SQLiteConnection(_config.FullFlagDbPath)) {
             var kv = db.Table<KeyValue>().FirstOrDefault(a => a.Key == key);

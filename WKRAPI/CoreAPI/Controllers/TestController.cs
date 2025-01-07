@@ -1,6 +1,5 @@
 ﻿using CoreAPI.AL.DataAccess;
 using CoreAPI.AL.Models.Config;
-using CoreAPI.AL.Services;
 using CoreAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -12,26 +11,14 @@ namespace CoreAPI.Controllers;
 
 [ApiController]
 [Route("")]
-public class TestController : ControllerBase
+public class TestController(
+    CoreApiConfig _config,
+    ILogger _logger,
+    CensorshipService _cs,
+    ISystemIOAbstraction _io,
+    ILogDbContext _logDb
+    ) : ControllerBase
 {
-    public CoreApiConfig _config;
-    public ILogger _logger;
-    public CensorshipService _cs;
-    public ISystemIOAbstraction _io;
-    IFlagDbContext _flagDb;
-    LibraryRepository _library;
-    ILogDbContext _logDb;
-
-    public TestController(CoreApiConfig config, ILogger logger, CensorshipService cs, ISystemIOAbstraction io, IFlagDbContext flagDbContext, LibraryRepository library, ILogDbContext logDb) {
-        _config = config;
-        _logger = logger;
-        _cs = cs;
-        _io = io;
-        _flagDb = flagDbContext;
-        _library = library;
-        _logDb = logDb;
-    }
-
     [HttpGet]
     public IActionResult GetJson() {
         var version = new Func<string>(() => {
@@ -45,7 +32,7 @@ public class TestController : ControllerBase
             }
         })();
 
-        var logDbStatus = new Func<(bool, bool?, string)>(() => {
+        var logDbStatus = new Func<(bool, bool?, string?)>(() => {
             try {
                 var isAccessible = _cs.IsAccessible();
 

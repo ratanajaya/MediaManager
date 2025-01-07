@@ -8,26 +8,26 @@ using System.Windows.Forms;
 
 namespace MetadataEditor;
 
+#pragma warning disable CS8618
 [SupportedOSPlatform("windows")]
 public partial class FormTags : Form
 {
     AlbumInfoProvider _ai;
 
-    List<Button> tagButtons;
-    List<Button> _povButtons = new();
-    List<Button> _focusButtons = new();
-    List<Button> _otherButtons = new();
-    List<Button> _rareButtons = new();
-    List<Button> _qualityButtons = new();
+    readonly List<Button> _povButtons = [];
+    readonly List<Button> _focusButtons = [];
+    readonly List<Button> _otherButtons = [];
+    readonly List<Button> _rareButtons = [];
+    readonly List<Button> _qualityButtons = [];
 
     SplitTagModel _splitTag;
 
-    int colCount = 4;
-    int buttonHeight = 30;
-    int buttonWidth = 110;
-    Color defaultColor = SystemColors.Control;
-    Color selectedColor = Color.Aqua;
-    FormMain formMain;
+    readonly int colCount = 4;
+    readonly int buttonHeight = 30;
+    readonly int buttonWidth = 110;
+    readonly Color defaultColor = SystemColors.Control;
+    readonly Color selectedColor = Color.Aqua;
+    readonly FormMain formMain;
 
     public FormTags(FormMain formMain, AlbumInfoProvider ai, SplitTagModel splitTag) {
         _ai = ai;
@@ -39,8 +39,6 @@ public partial class FormTags : Form
 
         DrawButtonFromSplitTags();
         RecolorSelectedTagButtons();
-        //DrawButtonFromTags(allTags, selectedTags);
-        //RefreshSelectedTagButtons(selectedTags);
     }
 
     void ReziseWindowToWrapItems(int row, int col) {
@@ -81,7 +79,7 @@ public partial class FormTags : Form
         }
 
         DrawButtons(_ai.Povs, _povButtons, (sender, e) => {
-            var name = ((Button)sender).Text;
+            var name = ((Button)sender!).Text;
             if(!_splitTag.Povs.Contains(name)){
                 _splitTag.Povs.Add(name);
             }
@@ -95,7 +93,7 @@ public partial class FormTags : Form
 
         row++;
         DrawButtons(_ai.Focuses, _focusButtons, (sender, e) => {
-            var name = ((Button)sender).Text;
+            var name = ((Button)sender!).Text;
             if(!_splitTag.Focuses.Contains(name)) {
                 _splitTag.Focuses.Add(name);
             }
@@ -109,7 +107,7 @@ public partial class FormTags : Form
 
         row++;
         DrawButtons(_ai.Others, _otherButtons, (sender, e) => {
-            var name = ((Button)sender).Text;
+            var name = ((Button)sender!).Text;
             if(!_splitTag.Others.Contains(name)) {
                 _splitTag.Others.Add(name);
             }
@@ -123,7 +121,7 @@ public partial class FormTags : Form
 
         row++;
         DrawButtons(_ai.Rares, _rareButtons, (sender, e) => {
-            var name = ((Button)sender).Text;
+            var name = ((Button)sender!).Text;
             if(!_splitTag.Rares.Contains(name)) {
                 _splitTag.Rares.Add(name);
             }
@@ -137,7 +135,7 @@ public partial class FormTags : Form
 
         row++;
         DrawButtons(_ai.Qualities, _qualityButtons, (sender, e) => {
-            var name = ((Button)sender).Text;
+            var name = ((Button)sender!).Text;
             if(!_splitTag.Qualities.Contains(name)) {
                 _splitTag.Qualities.Add(name);
             }
@@ -172,11 +170,6 @@ public partial class FormTags : Form
     }
 
     private void FormTags_Deactivate(object sender, EventArgs e) {
-        //if(tagButtons != null) {
-        //    foreach(var button in tagButtons) {
-        //        button.Click -= ButtonTags_Click;
-        //    }
-        //}
         this.Close();
     }
 }

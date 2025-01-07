@@ -4,14 +4,10 @@ using System.Collections.Generic;
 
 namespace CoreAPI.AL.Services;
 
-public class StaticInfoService
+public class StaticInfoService(
+    AlbumInfoProvider _ai
+    )
 {
-    AlbumInfoProvider _ai;
-
-    public StaticInfoService(AlbumInfoProvider ai) {
-        _ai = ai;
-    }
-
     public AlbumInfoVm GetAlbumInfoVm() {
         return new AlbumInfoVm {
             Povs = _ai.Povs,

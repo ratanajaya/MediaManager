@@ -8,14 +8,10 @@ namespace CoreAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]/[action]")]
-public class ExtraInfoController : ControllerBase
+public class ExtraInfoController(
+    ExtraInfoService _ei
+    ) : ControllerBase
 {
-    ExtraInfoService _ei;
-
-    public ExtraInfoController(ExtraInfoService ei) {
-        _ei = ei;
-    }
-
     [HttpGet]
     public IActionResult GetComments(string url) {
         return Ok(_ei.GetComments(url));

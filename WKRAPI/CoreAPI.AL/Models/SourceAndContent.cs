@@ -6,24 +6,24 @@ namespace CoreAPI.AL.Models;
 
 public class SourceAndContent
 {
-    public Source Source { get; set; }
-    public List<Comment> Comments { get; set; }
+    public required Source Source { get; set; }
+    public List<Comment> Comments { get; set; } = [];
 }
 
 public class SourceAndContentUpsertModel
 {
-    public string AlbumPath { get; set; }
-    public SourceAndContent SourceAndContent { get; set; }
+    public required string AlbumPath { get; set; }
+    public required SourceAndContent SourceAndContent { get; set; }
 }
 
 public class SourceDeleteModel 
 {
-    public string AlbumPath { get; set; }
-    public string Url { get; set; }
+    public required string AlbumPath { get; set; }
+    public required string Url { get; set; }
 }
 
 public class SourceUpdateModel
 {
-    public string AlbumPath { get; set; }
-    public Source Source { get; set; }
+    public required string AlbumPath { get; set; }
+    public required Source Source { get; set; }
 }

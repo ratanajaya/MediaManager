@@ -5,13 +5,13 @@ namespace CoreAPI.AL.Models.Config;
 
 public class CoreApiConfig
 {
-    public string LibraryPath { get; set; }
-    public string TempPath { get; set; }
-    public string AppType { get; set; }
-    public string Version { get; set; }
-    public string BuildType { get; set; }
-    public string PortableBrowserPath { get; set; }
-    public string ProcessorApiUrl { get; set; }
+    public required string LibraryPath { get; set; }
+    public required string TempPath { get; set; }
+    public required string AppType { get; set; }
+    public required string Version { get; set; }
+    public required string BuildType { get; set; }
+    public required string PortableBrowserPath { get; set; }
+    public required string ProcessorApiUrl { get; set; }
 
     public string FullPageCachePath
     {

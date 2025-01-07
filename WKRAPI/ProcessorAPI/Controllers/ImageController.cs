@@ -8,18 +8,12 @@ namespace ProcessorAPI.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class ImageController : ControllerBase
+public class ImageController(
+    ImageProcessor _ip,
+    ProcessorApiConfig _config,
+    Serilog.ILogger _logger
+    ) : ControllerBase
 {
-    ImageProcessor _ip;
-    ProcessorApiConfig _config;
-    Serilog.ILogger _logger;
-
-    public ImageController(ImageProcessor ip, ProcessorApiConfig config, Serilog.ILogger logger) {
-        _ip = ip;
-        _config = config;
-        _logger = logger;
-    }
-
     [HttpPost]
     public IActionResult UpscaleCompress([FromForm] string paramJson, [FromForm] IFormFile file) {
         try {

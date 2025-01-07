@@ -5,17 +5,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using c = SharedLibrary.Constants;
+using C = SharedLibrary.Constants;
 
 namespace CoreAPI.AL.Helpers;
 
 public static class QueryHelpers
 {
-    private static char[] _cons = { c.ConContain, c.ConEqual, c.ConNot, c.ConGreater, c.ConLesser };
+    private static char[] _cons = { C.ConContain, C.ConEqual, C.ConNot, C.ConGreater, C.ConLesser };
 
-    public static List<QuerySegment> GetQuerySegments(string query) {
+    public static List<QuerySegment> GetQuerySegments(string? query) {
         var modifiedQuery = query != null && !ContainsConnector(query) ? $"fulltitle:{query}" : query;
-        var segmenStrs = !string.IsNullOrEmpty(modifiedQuery) ? modifiedQuery.Split(',') : new string[] { };
+        var segmenStrs = !string.IsNullOrEmpty(modifiedQuery) ? modifiedQuery.Split(',') : [];
 
         var segments = segmenStrs.Select(s => {
             var segStr = s.Trim();
@@ -138,7 +138,7 @@ public static class QueryHelpers
         return true;
     }
 
-    public static AlbumVM Get(this List<AlbumVM> albumVMs, string path) => albumVMs.FirstOrDefault(a => a.Path == path);
+    public static AlbumVM Get(this List<AlbumVM> albumVMs, string path) => albumVMs.First(a => a.Path == path);
 
     public static bool ContainsConnector(string source) => source.IndexOfAny(_cons) > -1;
 
@@ -150,8 +150,8 @@ public static class QueryHelpers
 public class QuerySegment
 {
     public char Con { get; set; }
-    public string Key { get; set; }
-    public string Val { get; set; }
+    public required string Key { get; set; }
+    public required string Val { get; set; }
 
     public string Text { 
         get {

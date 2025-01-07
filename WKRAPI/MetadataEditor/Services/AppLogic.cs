@@ -15,44 +15,32 @@ using System.Net.Http;
 using System.Diagnostics;
 
 namespace MetadataEditor.Services;
+#pragma warning disable CA1416
 
-public class AppLogic
+public class AppLogic(
+    AlbumInfoProvider _ai,
+    ISystemIOAbstraction _io,
+    LibraryRepository _library,
+    FileRepository _file,
+    ExtraInfoService _ei,
+    ImageProcessor _ip,
+    CoreAPI.AL.Models.Config.CoreApiConfig _apiConf
+    )
 {
-    AlbumInfoProvider _ai;
-    ISystemIOAbstraction _io;
-    LibraryRepository _library;
-    FileRepository _file;
-    ExtraInfoService _ei;
-    ImageProcessor _ip;
-    CoreAPI.AL.Models.Config.CoreApiConfig _apiConf;
-
-    public AppLogic(AlbumInfoProvider albumInfo, ISystemIOAbstraction io, LibraryRepository library, FileRepository file, ExtraInfoService ei, ImageProcessor ip, CoreAPI.AL.Models.Config.CoreApiConfig apiConf) {
-        _ai = albumInfo;
-        _io = io;
-        _library = library;
-        _file = file;
-        _ei = ei;
-        _ip = ip;
-        _apiConf = apiConf;
-    }
-
     #region QUERY
     public async Task<AlbumViewModel> GetAlbumViewModelAsync(string path, Album oldAlbum) {
-        AlbumViewModel result = new AlbumViewModel();
-
-        if (_io.IsFileExists(Path.Combine(path, Constants.FileSystem.JsonFileName))) {
-            result.Album = await _io.DeserializeJson<Album>(Path.Combine(path, Constants.FileSystem.JsonFileName));
-        }
-        else {
-            result.Album = CreateStarterAlbumAsync(path, oldAlbum);
-        }
-        result.Path = path;
-        result.AlbumFiles = await GetAllFilesAsync(path);
+        AlbumViewModel result = new AlbumViewModel {
+            Album = _io.IsFileExists(Path.Combine(path, Constants.FileSystem.JsonFileName))
+                ? (await _io.DeserializeJson<Album>(Path.Combine(path, Constants.FileSystem.JsonFileName)))!
+                : CreateStarterAlbumAsync(path, oldAlbum),
+            Path = path,
+            AlbumFiles = await GetAllFilesAsync(path)
+        };
             
         return result;
     }
 
-    Album CreateStarterAlbumAsync(string path, Album oldAlbum = null) {
+    Album CreateStarterAlbumAsync(string path, Album oldAlbum) {
         var subDirNames = Directory.GetDirectories(path).Select(a => new DirectoryInfo(a).Name).ToList();
 
         string folderName = new DirectoryInfo(path).Name;
@@ -69,11 +57,11 @@ public class AppLogic
                 : Constants.Orientation.Portrait,
 
             Artists = artists,
-            Povs = oldAlbum?.Povs != null ? oldAlbum.Povs : new List<string>(),
-            Focuses = oldAlbum?.Focuses != null ? oldAlbum.Focuses : new List<string>(),
-            Others = oldAlbum?.Others != null ? oldAlbum.Others : new List<string>(),
-            Rares = oldAlbum?.Rares != null ? oldAlbum.Rares : new List<string>(),
-            Qualities = oldAlbum?.Qualities != null ? oldAlbum.Qualities : new List<string>(),
+            Povs = oldAlbum?.Povs != null ? oldAlbum.Povs : [],
+            Focuses = oldAlbum?.Focuses != null ? oldAlbum.Focuses : [],
+            Others = oldAlbum?.Others != null ? oldAlbum.Others : [],
+            Rares = oldAlbum?.Rares != null ? oldAlbum.Rares : [],
+            Qualities = oldAlbum?.Qualities != null ? oldAlbum.Qualities : [],
             Languages = languages,
 
             Tier = 0,
@@ -108,14 +96,14 @@ public class AppLogic
             return new();
 
         var snc = await _io.DeserializeJsonCamelCase<SourceAndContent>(jsonPath);
-        return new() { snc };
+        return new() { snc! };
     }
     #endregion
 
     #region COMMAND
     public async Task<string> SaveAlbumJson(AlbumViewModel vm) {
         try {
-            await Task.Run(() => _io.SerializeToJson(Path.Combine(vm.Path, Constants.FileSystem.JsonFileName), vm.Album));
+            await Task.Run(() => _io.SerializeToJson(Path.Combine(vm.Path!, Constants.FileSystem.JsonFileName), vm.Album));
 
             return "Success";
         }
@@ -267,11 +255,11 @@ public class AppLogic
 
                     CorrectionType = src.CorrectionType.Value,
                     Compression = src.Compression,
-                    Extension = src.Extension
+                    Extension = src.Extension!
                 };
 
-                var fullOriPath = Path.Combine(rootPath, src.AlRelPath);
-                var fullDstPath = toJpegExcludingWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath), Path.GetFileNameWithoutExtension(fullOriPath))}.jpeg" : fullOriPath;
+                var fullOriPath = Path.Combine(rootPath, src.AlRelPath!);
+                var fullDstPath = toJpegExcludingWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.jpeg" : fullOriPath;
 
                 using(var client = new HttpClient())
                 using(var form = new MultipartFormDataContent()) {
@@ -329,7 +317,7 @@ public class AppLogic
         });
 
         var dstPathForSuccessFiles = report.Where(a => a.Success)
-            .Select(a => Path.Combine(rootPath, a.AlRelDstPath))
+            .Select(a => Path.Combine(rootPath, a.AlRelDstPath!))
             .ToList();
 
         var displayModelForSuccessFiles = GetFileDisplayModels(rootPath, dstPathForSuccessFiles, upscaleTarget, clampToTarget);
@@ -387,7 +375,7 @@ public class AppLogic
             return new FileDisplayModel {
                 Path = path,
                 FileNameDisplay = Path.GetFileName(path),
-                SubDirDisplay = Path.GetDirectoryName(path).Replace(folderPath, ""),
+                SubDirDisplay = Path.GetDirectoryName(path)!.Replace(folderPath, ""),
                 UploadStatus = "-",
                 CorrectionModel = GetFileCorrectionModel(path, folderPath, upscaleTarget, clampToTarget),
             };

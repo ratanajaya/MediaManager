@@ -2,9 +2,9 @@
 
 public class OcrResult
 {
-    public string Original { get; set; }
-    public string Romanized { get; set; }
-    public string English { get; set; }
+    public required string Original { get; set; }
+    public required string Romanized { get; set; }
+    public required string English { get; set; }
 
-    public string Error { get; set; }
+    public string? Error { get; set; }
 }

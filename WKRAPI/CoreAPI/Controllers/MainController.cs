@@ -18,24 +18,15 @@ namespace CoreAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]/[action]")]
-public class MainController : ControllerBase, ILibraryController
+public class MainController(
+    AuthorizationService _auth,
+    LibraryRepository _library,
+    FileRepository _file,
+    AlbumInfoProvider _ai,
+    CoreApiConfig _config,
+    CensorshipService _cs
+    ) : ControllerBase, ILibraryController
 {
-    AuthorizationService _auth;
-    LibraryRepository _library;
-    FileRepository _file;
-    AlbumInfoProvider _ai;
-    CoreApiConfig _config;
-    CensorshipService _cs;
-
-    public MainController(AuthorizationService auth, LibraryRepository library, FileRepository file, AlbumInfoProvider ai, CoreApiConfig config, CensorshipService cs) {
-        _auth = auth;
-        _library = library;
-        _file = file;
-        _ai = ai;
-        _config = config;
-        _cs = cs;
-    }
-
     #region Private Methods
     (FileInfoModel fi, int count) GetCoverPageInfo(string query) {
         (var cpi, var count) = _file.GetRandomCoverPageInfoByQuery(query);
@@ -146,8 +137,8 @@ public class MainController : ControllerBase, ILibraryController
     }
 
     [HttpGet]
-    public IActionResult GetAlbumCardModels(int page, int row, string query, bool excludeCorrected) {
-        var cleanQuery = HttpUtility.UrlDecode(query);
+    public IActionResult GetAlbumCardModels(int page, int row, string? query, bool excludeCorrected) {
+        var cleanQuery = HttpUtility.UrlDecode(query ?? "");
         var decensoredQuery = _cs.ConDecensorQuery(cleanQuery);
 
         var albumVms = _library.GetAlbumVMs(page, row, decensoredQuery, excludeCorrected);

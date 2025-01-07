@@ -20,27 +20,17 @@ using CoreAPI.AL.Models.Config;
 
 namespace CoreAPI.AL.Services;
 
-public class OperationService {
-    CoreApiConfig _config;
-    ISystemIOAbstraction _io;
-    AlbumInfoProvider _ai;
-    ILogger _logger;
-    ImageProcessor _ip;
-    ILogDbContext _logDb;
-    LibraryRepository _library;
-    GoogleService _google;
-
-    public OperationService(CoreApiConfig config, ISystemIOAbstraction io, AlbumInfoProvider ai, ILogger logger, ImageProcessor ip, ILogDbContext logDb, LibraryRepository library, GoogleService google) {
-        _config = config;
-        _io = io;
-        _ai = ai;
-        _logger = logger;
-        _ip = ip;
-        _logDb = logDb;
-        _library = library;
-        _google = google;
-    }
-
+public class OperationService(
+    CoreApiConfig _config,
+    ISystemIOAbstraction _io,
+    AlbumInfoProvider _ai,
+    ILogger _logger,
+    ImageProcessor _ip,
+    ILogDbContext _logDb,
+    LibraryRepository _library,
+    GoogleService _google
+    )
+{
     #region Correction
     public List<PathCorrectionModel> HScanCorrectiblePages(List<string> libRelPaths, int thread, int upscaleTarget) {
         var result = libRelPaths.Select(a => new PathCorrectionModel {
@@ -91,7 +81,7 @@ public class OperationService {
         return correctablePaths;
     }
 
-    public List<FileCorrectionModel> GetCorrectablePages(int type, string libRelAlbumPath, int thread, int upscaleTarget, bool clampToTarget) {
+    public List<FileCorrectionModel?> GetCorrectablePages(int type, string libRelAlbumPath, int thread, int upscaleTarget, bool clampToTarget) {
         int trueThread = Math.Clamp(thread, 1, 5);
         //This method becomes unstable and produces faulty images if performing upscaling/compression using 6 threads
         //Tested with 6 Core Ryzen 5 5600 6-Core CPU
@@ -103,7 +93,7 @@ public class OperationService {
 
             var filePaths = _io.GetSuitableFilePaths(fullAlbumPath, _ai.CorrectableImageFormats, 2);
 
-            var allFileInfos = new FileInfo[filePaths.Count];
+            FileInfo?[] allFileInfos = new FileInfo[filePaths.Count];
             Parallel.For(0, filePaths.Count, new ParallelOptions { MaxDegreeOfParallelism = trueThread }, (i, state) => {
                 var filePath = filePaths[i];
                 try {
@@ -120,9 +110,14 @@ public class OperationService {
 
             var fileInfoAboveLastDate = allFileInfos.Where(a => a != null && a.LastWriteTime > lastCorrectionDate).ToList();
 
-            var correctionModelAboveLastDate = new FileCorrectionModel[fileInfoAboveLastDate.Count];
+            FileCorrectionModel?[] correctionModelAboveLastDate = new FileCorrectionModel[fileInfoAboveLastDate.Count];
             Parallel.For(0, fileInfoAboveLastDate.Count, new ParallelOptions { MaxDegreeOfParallelism = trueThread }, (i, state) => {
                 var fileInfo = fileInfoAboveLastDate[i];
+                if(fileInfo == null) {
+                    correctionModelAboveLastDate[i] = null;
+                    return;
+                }
+
                 try {
                     var newFcm = GetFileCorrectionModel(fileInfo, fullAlbumPath);
 
@@ -184,7 +179,7 @@ public class OperationService {
 
             var fileCount = param.FileToCorrectList.Count;
 
-            var fileList = new Func<FileCorrectionModel[]>(() => {
+            FileCorrectionModel[] fileList = new Func<FileCorrectionModel[]>(() => {
                 int cStart = param.FileToCorrectList.FindIndex(a => a.CorrectionType == FileCorrectionType.Compress);
                 if(cStart == fileCount - 1 || cStart == -1)
                     return param.FileToCorrectList.ToArray();
@@ -243,14 +238,14 @@ public class OperationService {
                         UpscalerType = param.UpscalerType,
                         ToJpeg = toJpegExcludingWebp,
 
-                        CorrectionType = src.CorrectionType.Value,
+                        CorrectionType = src.CorrectionType!.Value,
                         Compression = src.Compression,
-                        Extension = src.Extension
+                        Extension = src.Extension!
                     };
 
-                    var fullOriPath = Path.Combine(fullAlbumPath, src.AlRelPath);
+                    var fullOriPath = Path.Combine(fullAlbumPath, src.AlRelPath!);
 
-                    var fullDstPath = toJpegExcludingWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath), Path.GetFileNameWithoutExtension(fullOriPath))}.jpeg" : fullOriPath;
+                    var fullDstPath = toJpegExcludingWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.jpeg" : fullOriPath;
 
                     using(var client = new HttpClient())
                     using(var form = new MultipartFormDataContent()) {
@@ -322,7 +317,7 @@ public class OperationService {
                 var src = report[i];
 
                 if(src.Success) {
-                    var cm = GetFileCorrectionModel(new FileInfo(Path.Combine(fullAlbumPath, src.AlRelDstPath)), fullAlbumPath);
+                    var cm = GetFileCorrectionModel(new FileInfo(Path.Combine(fullAlbumPath, src.AlRelDstPath!)), fullAlbumPath);
 
                     src.Height = cm.Height;
                     src.Width = cm.Width;
@@ -382,7 +377,7 @@ public class OperationService {
             start.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
 
             var (output, error) = new Func<(string, string)>(() => {
-                using(Process process = Process.Start(start)) {
+                using(Process process = Process.Start(start)!) {
                     // Read the output (OCR result) from the Python script
                     string output = process.StandardOutput.ReadToEnd();
                     string error = process.StandardError.ReadToEnd();  // Capture the error stream (logs)

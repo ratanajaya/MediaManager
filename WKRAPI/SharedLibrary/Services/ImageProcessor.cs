@@ -9,6 +9,7 @@ using SixLabors.ImageSharp.Formats.Webp;
 
 namespace SharedLibrary;
 
+#pragma warning disable CA1416
 /// <summary>
 /// Taken from yugee's Mass Image Compressor
 /// https://sourceforge.net/p/icompress/code/
@@ -131,8 +132,7 @@ public class ImageProcessor
             else
                 return 100;
         }
-        catch(Exception ex) {
-            //_log.Error($"GetQualityIfCompressed | {filePath} | {ex.Message}");
+        catch(Exception) {
             return 100; //default to 100 in case of error.
         }
     }

@@ -10,16 +10,11 @@ namespace CoreAPI.Controllers;
 
 [ApiController]
 [Route("[controller]/[action]")]
-public class SseController : ControllerBase
+public class SseController(
+    AuthorizationService _auth,
+    LibraryRepository _library
+    ) : ControllerBase
 {
-    AuthorizationService _auth;
-    LibraryRepository _library;
-
-    public SseController(AuthorizationService auth, LibraryRepository library) {
-        _auth = auth;
-        _library = library;
-    }
-
     async Task WriteResponse(EventStreamData data) {
         #region Important Lesson from static
         //NEVER fuck around with static class configurations
@@ -40,7 +35,7 @@ public class SseController : ControllerBase
     public async Task TestSse() {
         _auth.DisableRouteOnPublicBuild();
 
-        Response.Headers.Add("Content-Type", "text/event-stream");
+        Response.Headers.Append("Content-Type", "text/event-stream");
         try {
             await WriteResponse(new EventStreamData {
                 IsError = false,
@@ -77,7 +72,7 @@ public class SseController : ControllerBase
     public async Task ReloadDatabase() {
         _auth.DisableRouteOnPublicBuild();
 
-        Response.Headers.Add("Content-Type", "text/event-stream");
+        Response.Headers.Append("Content-Type", "text/event-stream");
         try {
             await _library.ReloadDatabase(WriteResponse);
         }
@@ -95,7 +90,7 @@ public class SseController : ControllerBase
     public async Task RescanDatabase() {
         _auth.DisableRouteOnPublicBuild();
 
-        Response.Headers.Add("Content-Type", "text/event-stream");
+        Response.Headers.Append("Content-Type", "text/event-stream");
         try {
             await _library.RescanDatabase(WriteResponse);
         }

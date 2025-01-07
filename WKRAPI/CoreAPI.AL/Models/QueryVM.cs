@@ -2,7 +2,7 @@
 
 public class QueryVM
 {
-    public string Name { get; set; }
+    public required string Name { get; set; }
     public int Tier { get; set; }
-    public string Query { get; set; }
+    public required string Query { get; set; }
 }

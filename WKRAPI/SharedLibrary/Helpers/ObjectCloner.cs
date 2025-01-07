@@ -6,6 +6,6 @@ public static class ObjectCloner
 {
     public static T Clone<T>(this T source) {
         var bytes = JsonSerializer.Serialize(source);
-        return JsonSerializer.Deserialize<T>(bytes);
+        return JsonSerializer.Deserialize<T>(bytes)!;
     }
 }

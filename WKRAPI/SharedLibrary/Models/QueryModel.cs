@@ -2,7 +2,7 @@
 
 public class QueryModel
 {
-    public string Name { get; set; }
-    public string Query { get; set; }
+    public required string Name { get; set; }
+    public required string Query { get; set; }
     public int Group { get; set; }
 }

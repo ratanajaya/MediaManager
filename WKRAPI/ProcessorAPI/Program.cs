@@ -25,6 +25,8 @@ builder.Services.AddSingleton<ProcessorApiConfig>(new ProcessorApiConfig {
 });
 
 builder.Services.AddScoped<ImageProcessor>();
+builder.Services.AddScoped<IPcService, PcService>();
+builder.Services.AddScoped<ISystemIOAbstraction, SystemIOAbstraction>();
 
 builder.Services.AddCors(o => o.AddPolicy("AllowAllOrigin", builder => {
     builder.AllowAnyOrigin()

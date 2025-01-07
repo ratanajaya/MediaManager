@@ -14,37 +14,28 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using qh = CoreAPI.AL.Helpers.QueryHelpers;
+using Qh = CoreAPI.AL.Helpers.QueryHelpers;
 
 namespace CoreAPI.AL.Services;
 
-public class LibraryRepository 
+public class LibraryRepository (
+    ILogger _logger,
+    CoreApiConfig _config,
+    AlbumInfoProvider _ai,
+    ISystemIOAbstraction _io,
+    IDbContext _db,
+    ILogDbContext _logDb
+    )
 {
-    ILogger _logger;
-    CoreApiConfig _config;
-    AlbumInfoProvider _ai;
-    ISystemIOAbstraction _io;
-    IDbContext _db;
-    ILogDbContext _logDb;
-
-    public LibraryRepository(ILogger logger, CoreApiConfig config, AlbumInfoProvider ai, ISystemIOAbstraction io, IDbContext db, ILogDbContext logDb) {
-        _logger = logger;
-        _config = config;
-        _ai = ai;
-        _io = io;
-        _db = db;
-        _logDb = logDb;
-    }
-
     #region Query
-    public IEnumerable<AlbumVM> GetAlbumVMs(int page, int row, string query, bool excludeCorrected = false) {
+    public IEnumerable<AlbumVM> GetAlbumVMs(int page, int row, string? query, bool excludeCorrected = false) {
         var now = DateTime.Now;
-        var querySegments = qh.GetQuerySegments(query);
+        var querySegments = Qh.GetQuerySegments(query);
         DateTime? minRecentBatch = querySegments.Any(a => a.Key == "SPECIAL" && a.Val.Equals("Recent", StringComparison.OrdinalIgnoreCase)) 
             ? _db.AlbumVMs.Max(a => a.Album.EntryDate).AddDays(-1)
             : null;
 
-        var filteredAlbum = _db.AlbumVMs.Where(a => qh.MatchAllQueries(a.Album, querySegments, _ai.Tier1Artists.Concat(_ai.Tier2Artists).ToArray(), _ai.Characters, now, minRecentBatch));
+        var filteredAlbum = _db.AlbumVMs.Where(a => Qh.MatchAllQueries(a.Album, querySegments, _ai.Tier1Artists.Concat(_ai.Tier2Artists).ToArray(), _ai.Characters, now, minRecentBatch));
 
         if(excludeCorrected) {
             var correctedPaths = _logDb.GetAlbumCorrections().Select(ac => ac.LibRelPath).ToList();
@@ -62,7 +53,7 @@ public class LibraryRepository
     #endregion
 
     #region Command
-    public void SaveAlbumMetadata(AlbumVM albumVM, string crudLog) {
+    public void SaveAlbumMetadata(AlbumVM albumVM, string? crudLog) {
         _io.SerializeToJson(Path.Combine(_config.LibraryPath, albumVM.Path, Constants.FileSystem.JsonFileName), albumVM.Album);
         if(crudLog != null)
             _logDb.InsertCrudLog(crudLog, albumVM);

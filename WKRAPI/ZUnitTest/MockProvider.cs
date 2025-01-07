@@ -12,7 +12,12 @@ public class MockProvider
             LibraryPath = "Z:\\Test Library",
             ScLibraryPath = "Z:\\SC Test Library",
             BuildType = "Private",
-            TempPath = "_Temp"
+            TempPath = "_Temp",
+
+            ProcessorApiUrl = "Not Set",
+            AppType = "Not Set",
+            Version = "Not Set",
+            PortableBrowserPath = "Not Set",
         };
     }
 

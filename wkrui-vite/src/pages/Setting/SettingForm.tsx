@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 
-import { Button, Input, Switch, Typography } from 'antd';
+import { Button, Input, Space, Switch, Typography } from 'antd';
 
 import * as CSS from 'csstype';
 import _constant from "_utils/_constant";
@@ -9,22 +9,41 @@ import { ClockCircleOutlined, PoweroffOutlined } from '@ant-design/icons';
 import { useSetting } from '_shared/Contexts/SettingProvider';
 import { useAuth } from '_shared/Contexts/useAuth';
 import useNotification from '_shared/Contexts/NotifProvider';
+import { LocalSpinner } from '_shared/Spinner';
+import { ResponseResult } from '_utils/Types';
 
 export default function SettingForm(){
   const { axiosA } = useAuth();
   const { setting, setSetting, saveSetting } = useSetting();
   const [useCensorship, setUseCenshorship] = useState<boolean | null>(null);
+  const [imageProcessorOn, setImageProcessorOn] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { notif } = useNotification();
 
   useEffect(() => {
-    axiosA.get<boolean>(_uri.Censorship())
-      .then((response) => {
-        setUseCenshorship(response.data)
-      })
-      .catch((error) => {
-        notif.apiError(error);
-      });
+    setLoading(true);
+    Promise.all([
+      axiosA.get<boolean>(_uri.Censorship())
+        .then((response) => {
+          setUseCenshorship(response.data)
+        })
+        .catch((error) => {
+          notif.apiError(error);
+        }),
+
+      axiosA.get<ResponseResult<boolean>>(_uri.IpCheck())
+        .then((response) => {
+          setImageProcessorOn(response.data.success);
+          
+          if(!response.data.success)
+            notif.error(response.data.message, '', response.data);
+        })
+        .catch((error) => {
+          notif.apiError(error);
+        }),
+    ])
+    .finally(() => setLoading(false));
   },[]);
 
   function censorshipChanged(checked: boolean){
@@ -49,23 +68,54 @@ export default function SettingForm(){
       });
   }
 
+  function ipPcAction(action: string){
+    const url = action === 'Sleep' ? _uri.IpSleep() : _uri.IpShutdown();
+
+    axiosA.post(url)
+      .then(res => {
+        notif.info(`${action} command sent`, '', {});
+      })
+      .catch(err => {
+        notif.apiError(err);
+      });
+  }
+
   return(
-    <>
-      <div style={{display:'flex', gap:'12px', marginBottom:'12px', marginTop:'4px'}}>
-        <Button
-          danger
-          style={{height:'70px', width:'70px'}}
-          onClick={() => { pcAction('Sleep'); }}
-        >
-          <ClockCircleOutlined style={{fontSize:36}} />
-        </Button>
-        <Button
-          danger
-          style={{height:'70px', width:'70px'}}
-          onClick={() => { pcAction('Hibernate'); }}
-        >
-          <PoweroffOutlined style={{fontSize:36}} />
-        </Button>
+    <LocalSpinner loading={loading}>
+      <div className=' flex gap-3 mb-3 mt-1'>
+        <Space>
+          <Button
+            danger
+            className=' h-16 w-16'
+            onClick={() => { pcAction('Sleep'); }}
+          >
+            <ClockCircleOutlined style={{fontSize:36}} />
+          </Button>
+          <Button
+            danger
+            className=' h-16 w-16'
+            onClick={() => { pcAction('Hibernate'); }}
+          >
+            <PoweroffOutlined style={{fontSize:36}} />
+          </Button>
+        </Space>
+        <Space className=' flex-1'>
+          <Button
+            className=' h-16 w-16'
+            onClick={() => { ipPcAction('Sleep'); }}
+            disabled={!imageProcessorOn}
+          >
+            <ClockCircleOutlined style={{fontSize:36}} />
+          </Button>
+          <Button
+            className=' h-16 w-16'
+            onClick={() => { ipPcAction('Shutdown'); }}
+            disabled={!imageProcessorOn}
+          >
+            <PoweroffOutlined style={{fontSize:36}} />
+          </Button>
+
+        </Space>
       </div>
       <FormRow
         col0={
@@ -197,7 +247,7 @@ export default function SettingForm(){
           </Button>
         }
       />
-    </>
+    </LocalSpinner>
   );
 }
 

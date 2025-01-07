@@ -26,9 +26,9 @@ public static class PrimitiveHelper
         return new string(source.Where(x => char.IsLetterOrDigit(x)).ToArray());
     }
 
-    public static List<string> CleanListString(this List<string> source) {
+    public static List<string> CleanListString(this List<string?> source) {
         return source.Where(s => !string.IsNullOrWhiteSpace(s))
-                            .Select(s => s.Trim())
+                            .Select(s => s!.Trim())
                             .OrderBy(s => s)
                             .ToList();
     }

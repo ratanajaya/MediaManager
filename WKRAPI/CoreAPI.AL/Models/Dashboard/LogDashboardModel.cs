@@ -5,10 +5,10 @@ namespace CoreAPI.AL.Models.Dashboard;
 
 public class LogDashboardModel
 {
-    public string Id { get; set; }
-    public string AlbumFullTitle { get; set; }
-    public string Operation { get; set; }
+    public required string Id { get; set; }
+    public required string AlbumFullTitle { get; set; }
+    public required string Operation { get; set; }
     public DateTime CreationTime { get; set; }
 
-    public Album Album { get; set; }
+    public Album? Album { get; set; }
 }

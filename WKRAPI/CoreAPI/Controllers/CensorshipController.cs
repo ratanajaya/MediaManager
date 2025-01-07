@@ -7,14 +7,10 @@ namespace CoreAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("Censorship")]
-public class CensorshipController : ControllerBase
+public class CensorshipController(
+    CensorshipService _cs
+    ) : ControllerBase
 {
-    CensorshipService _cs;
-
-    public CensorshipController(CensorshipService cs) {
-        _cs = cs;
-    }
-
     [HttpGet]
     public IActionResult Get() {
         return Ok(_cs.IsCensorshipOn());

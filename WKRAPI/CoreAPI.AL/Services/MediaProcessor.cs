@@ -6,26 +6,21 @@ using SharedLibrary.Models;
 using SixLabors.ImageSharp;
 using System;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Xabe.FFmpeg;
 
 namespace CoreAPI.AL.Services;
 
-public class MediaProcessor
+public class MediaProcessor(
+    ISystemIOAbstraction _io,
+    AlbumInfoProvider _ai,
+    ILogger _logger
+    )
 {
-    ISystemIOAbstraction _io;
-    AlbumInfoProvider _ai;
-    ILogger _logger;
-
-    public MediaProcessor(ISystemIOAbstraction io, AlbumInfoProvider ai, ILogger logger) {
-        _io = io;
-        _ai = ai;
-        _logger = logger;
-    }
-
     public FileInfoModel GenerateFileInfo(string rootPath, string fullFilePath, bool includeDetail, bool includeDimension) {
         long size = 0;
-        string extension = null;
+        string? extension = null;
         DateTime? createDate = null;
         DateTime? updateDate = null;
         PageOrientation? orientation = null;

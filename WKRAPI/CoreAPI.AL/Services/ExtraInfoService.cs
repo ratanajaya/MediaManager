@@ -1,7 +1,6 @@
 ﻿using CoreAPI.AL.DataAccess;
 using CoreAPI.AL.Helpers;
 using CoreAPI.AL.Models;
-using CoreAPI.AL.Models.Config;
 using CoreAPI.AL.Models.LogDb;
 using Serilog;
 using SharedLibrary.Models;
@@ -12,24 +11,14 @@ using System.Threading.Tasks;
 
 namespace CoreAPI.AL.Services;
 
-public class ExtraInfoService
+public class ExtraInfoService(
+    ILogger _logger,
+    ILogDbContext _logDb,
+    AlbumInfoProvider _ai,
+    IDbContext _db,
+    LibraryRepository _lib
+    )
 {
-    ILogger _logger;
-    ILogDbContext _logDb;
-    AlbumInfoProvider _ai;
-    CoreApiConfig _config;
-    IDbContext _db;
-    LibraryRepository _lib;
-
-    public ExtraInfoService(ILogger logger, ILogDbContext logDb, AlbumInfoProvider ai, CoreApiConfig config, IDbContext db, LibraryRepository lib) {
-        _logger = logger;
-        _logDb = logDb;
-        _ai = ai;
-        _config = config;
-        _db = db;
-        _lib = lib;
-    }
-
     public List<Comment> GetComments(string url) {
         try {
             return _logDb.GetComments(url);
@@ -81,7 +70,7 @@ public class ExtraInfoService
         existingComments.ForEach(a => {
             var scrappedComment = scrapedComments.FirstOrDefault(b => b.Author == a.Author && b.PostedDate == a.PostedDate);
 
-            if(a.Content != scrappedComment?.Content || a.Score != scrappedComment.Score) {
+            if(a.Content != scrappedComment?.Content || a.Score != scrappedComment?.Score) {
                 a.Content = scrappedComment?.Content;
                 a.Score = scrappedComment?.Score;
                 a.UpdatedDate = now;
@@ -154,6 +143,8 @@ public class ExtraInfoService
                     var id = url.Split(':').Last();
                     var apiUrl = string.Format(_ai.NUrl, id);
 
+                    await Task.Delay(10); //placeholder
+
                     throw new NotImplementedException();
                 }
                 else if(url.StartsWith("E:")) {
@@ -174,7 +165,7 @@ public class ExtraInfoService
             existingComments.ForEach(a => {
                 var scrappedComment = scrapedComments.FirstOrDefault(b => b.Author == a.Author && b.PostedDate == a.PostedDate);
 
-                if(a.Content != scrappedComment?.Content || a.Score != scrappedComment.Score) {
+                if(a.Content != scrappedComment?.Content || a.Score != scrappedComment?.Score) {
                     a.Content = scrappedComment?.Content;
                     a.Score = scrappedComment?.Score;
                     a.UpdatedDate = now;

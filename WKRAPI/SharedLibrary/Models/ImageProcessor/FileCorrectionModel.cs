@@ -4,8 +4,8 @@ namespace SharedLibrary.Models;
 
 public class FileCorrectionModel
 {
-    public string AlRelPath { get; set; }
-    public string Extension { get; set; }
+    public string? AlRelPath { get; set; }
+    public string? Extension { get; set; }
     public long Byte { get; set; }
     public int Height { get; set; }
     public int Width { get; set; }
@@ -28,15 +28,15 @@ public class FileCorrectionModel
     public FileCorrectionType? CorrectionType { get; set; }
 
     public float? UpscaleMultiplier { get; set; }
-    public CompressionCondition Compression { get; set; }
+    public CompressionCondition? Compression { get; set; }
 }
 
 public class FileCorrectionReportModel
 {
-    public string AlRelPath { get; set; }
-    public string AlRelDstPath { get; set; }
+    public string? AlRelPath { get; set; }
+    public string? AlRelDstPath { get; set; }
     public bool Success { get; set; }
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     public int Height { get; set; }
     public int Width { get; set; }
@@ -51,9 +51,9 @@ public class UpscaleCompressApiParam
     public FileCorrectionType CorrectionType { get; set; }
 
     public float? UpscaleMultiplier { get; set; }
-    public CompressionCondition Compression { get; set; }
+    public CompressionCondition? Compression { get; set; }
     public bool ToJpeg { get; set; }
-    public string Extension { get; set; }
+    public required string Extension { get; set; }
 }
 
 public enum FileCorrectionType

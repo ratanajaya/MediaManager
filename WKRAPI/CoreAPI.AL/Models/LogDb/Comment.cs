@@ -9,10 +9,10 @@ public class Comment
     public int Id { get; set; }
 
     [Indexed]
-    public string Url { get; set; } //Album.Sources.Url
+    public string? Url { get; set; } //Album.Sources.Url
 
-    public string Author { get; set; }
-    public string Content { get; set; }
+    public string? Author { get; set; }
+    public string? Content { get; set; }
     public double? Score { get; set; }
     public DateTime? PostedDate { get; set; }
 

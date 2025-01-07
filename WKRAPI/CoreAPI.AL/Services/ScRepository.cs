@@ -17,27 +17,16 @@ using System.Threading.Tasks;
 
 namespace CoreAPI.AL.Services;
 
-public class ScRepository {
-    CoreApiConfig _config;
-    ISystemIOAbstraction _io;
-    AlbumInfoProvider _ai;
-    ILogger _logger;
-    MediaProcessor _media;
-    ImageProcessor _ip;
-    ILogDbContext _logDb;
-
-    public ScRepository(CoreApiConfig config, ISystemIOAbstraction io, AlbumInfoProvider ai, ILogger logger, MediaProcessor media, ImageProcessor ip, ILogDbContext logDb) {
-        _config = config;
-        _io = io;
-        _ai = ai;
-        _logger = logger;
-        _media = media;
-        _ip = ip;
-        _logDb = logDb;
-    }
-
+public class ScRepository(
+     CoreApiConfig _config,
+    ISystemIOAbstraction _io,
+    AlbumInfoProvider _ai,
+    ILogger _logger,
+    MediaProcessor _media
+    )
+{
     #region Sc Db
-    ScDbModel _scDb;
+    ScDbModel? _scDb;
 
     private void InitializeScDb() {
         if(_scDb != null) return;
@@ -49,7 +38,7 @@ public class ScRepository {
     private ScMetadataModel GetScAlbumMetadata(string albumPath) {
         InitializeScDb();
 
-        var scMetadata = _scDb.ScMetadatas.FirstOrDefault(m => m.Path == albumPath);
+        var scMetadata = _scDb!.ScMetadatas.FirstOrDefault(m => m.Path == albumPath);
         if(scMetadata != null) return scMetadata;
 
         var newScMetadata = new ScMetadataModel {
@@ -64,13 +53,13 @@ public class ScRepository {
 
     private void SaveChanges() {
         InitializeScDb();
-        _io.SerializeToJson(_config.ScFullAlbumDbPath, _scDb);
+        _io.SerializeToJson(_config.ScFullAlbumDbPath, _scDb!);
     }
     #endregion
 
     #region Query
     public IEnumerable<ScAlbumVM> GetAlbumVMs(string libRelPath) {
-        FileInfoModel GetCoverInfo(string path) {
+        FileInfoModel GetCoverInfo(string? path) {
             var finalPath = path ?? _config.ScFullDefaultThumbnailPath;
 
             var fi = new FileInfo(finalPath);
@@ -158,7 +147,7 @@ public class ScRepository {
                 //check if fs.AlRelPath is not located in a directory
                 for(int i = 0; i < subDirNodes.Count; i++) {
                     if(fs.AlRelPath.StartsWith(subDirNodes[i].AlRelPath)) {
-                        subDirNodes[i].DirInfo.Childs.Add(fs);
+                        subDirNodes[i].DirInfo!.Childs!.Add(fs);
                         return;
                     }
                 }

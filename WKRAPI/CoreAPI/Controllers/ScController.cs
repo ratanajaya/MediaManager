@@ -17,21 +17,15 @@ namespace CoreAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]/[action]")]
-public class ScController : ControllerBase, ILibraryController
+public class ScController(
+    AuthorizationService _auth,
+    ScRepository _sc,
+    CoreApiConfig _config
+    ) : ControllerBase, ILibraryController
 {
-    AuthorizationService _auth;
-    ScRepository _sc;
-    CoreApiConfig _config;
-
-    public ScController(AuthorizationService auth, ScRepository sc, CoreApiConfig config) {
-        _auth = auth;
-        _sc = sc;
-        _config = config;
-    }
-
     #region Album Query
     [HttpGet]
-    public IActionResult GetAlbumCardModels(int page, int row, string query, bool excludeCorrected) {
+    public IActionResult GetAlbumCardModels(int page, int row, string? query, bool excludeCorrected) {
         var libRelPath = query != null ? query : "";
 
         var data = _config.IsPrivate
@@ -57,7 +51,7 @@ public class ScController : ControllerBase, ILibraryController
     }
 
     [HttpGet]
-    public IActionResult GetLibraryDirNodes(string path, bool includeChild) {
+    public IActionResult GetLibraryDirNodes(string? path, bool includeChild) {
         return Ok(_sc.GetLibraryDirNodes(path ?? string.Empty, includeChild));
     }
     #endregion

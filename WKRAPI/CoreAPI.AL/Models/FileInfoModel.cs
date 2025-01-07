@@ -4,9 +4,9 @@ namespace CoreAPI.AL.Models;
 
 public class FileInfoModel
 {
-    public string Name { get; set; }
-    public string Extension { get; set; }
-    public string LibRelPath { get; set; }
+    public required string Name { get; set; }
+    public string? Extension { get; set; }
+    public required string LibRelPath { get; set; }
 
     public long Size { get; set; }
     public DateTime? CreateDate { get; set; }

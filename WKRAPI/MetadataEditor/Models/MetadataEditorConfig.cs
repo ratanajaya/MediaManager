@@ -2,6 +2,6 @@
 
 public class MetadataEditorConfig
 {
-    public string BrowsePath { get; set; }
-    public string[] Args { get; set; }
+    public required string BrowsePath { get; set; }
+    public string[] Args { get; set; } = [];
 }

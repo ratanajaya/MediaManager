@@ -20,6 +20,8 @@ using SixLabors.ImageSharp;
 
 namespace MetadataEditor;
 
+#pragma warning disable CS8618
+#pragma warning disable CS8622
 [SupportedOSPlatform("windows")]
 public partial class FormMain : Form
 {
@@ -27,14 +29,17 @@ public partial class FormMain : Form
     int _currentFileIndex = 0; //For album display
     AppLogic _al;
     AlbumInfoProvider _ai;
-    MetadataEditor.Models.MetadataEditorConfig _config;
+    MetadataEditorConfig _config;
 
-    AlbumViewModel _viewModel;
+    AlbumViewModel _viewModel = new() {
+            Album = new Album(),
+            Path = "",
+        };
     List<SourceAndContent> _tempSourceAndContents = new();
     List<FileDisplayModel> _srcFileDisplays;
     List<FileDisplayModel>? _dstFileDisplays = null;
-    string _cachedFolderNext;
-    string _cachedFolderPrev;
+    string? _cachedFolderNext;
+    string? _cachedFolderPrev;
 
     Dictionary<string, string> _shortDisplayMap = new Dictionary<string, string>() {
             { "Ptr", C.Orientation.Portrait },
@@ -47,7 +52,7 @@ public partial class FormMain : Form
         };
 
     #region Initialization
-    public FormMain(AppLogic appLogic, AlbumInfoProvider ai, MetadataEditor.Models.MetadataEditorConfig config) {
+    public FormMain(AppLogic appLogic, AlbumInfoProvider ai, MetadataEditorConfig config) {
         InitializeComponent();
 
         _al = appLogic;
@@ -78,19 +83,13 @@ public partial class FormMain : Form
 
     private void FormMain_Load(object sender, EventArgs e) {
         txtTags.Text = "";
-        InitializeEmptyAlbumViewModel();
         if(_config.Args.Any()) {
             var path = _config.Args[0];
-            var viewModel = Task.Run(() => _al.GetAlbumViewModelAsync(path, _viewModel?.Album)).GetAwaiter().GetResult();
-            AssignViewModel(viewModel, int.Parse(txtUpscaleTarget.Text));
+            var viewModel = Task.Run(() => _al.GetAlbumViewModelAsync(path, _viewModel.Album)).GetAwaiter().GetResult();
+            AssignViewModel(viewModel, int.Parse(txtUpscaleTarget.Text)).GetAwaiter().GetResult();
         }
     }
 
-    private void InitializeEmptyAlbumViewModel() {
-        _viewModel = new AlbumViewModel {
-            Album = new Album()
-        };
-    }
     #endregion
 
     #region Browse folder for album
@@ -104,7 +103,7 @@ public partial class FormMain : Form
     }
 
     private async Task AssignAlbumPath(string path) {
-        var viewModel = await _al.GetAlbumViewModelAsync(path, _viewModel?.Album);
+        var viewModel = await _al.GetAlbumViewModelAsync(path, _viewModel.Album);
         await AssignViewModel(viewModel, int.Parse(txtUpscaleTarget.Text));
     }
 
@@ -119,13 +118,13 @@ public partial class FormMain : Form
     }
 
     private void FormMain_DragEnter(object sender, DragEventArgs e) {
-        if(e.Data.GetDataPresent(DataFormats.FileDrop) && Directory.Exists(((string[])e.Data.GetData(DataFormats.FileDrop))[0]))
+        if(e.Data!.GetDataPresent(DataFormats.FileDrop) && Directory.Exists(((string[])e.Data.GetData(DataFormats.FileDrop)!)[0]))
             e.Effect = DragDropEffects.Copy;
     }
 
     private async void FormMain_DragDrop(object sender, DragEventArgs e) {
-        if(!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-        var path = ((string[])e.Data.GetData(DataFormats.FileDrop))[0];
+        if(!e.Data!.GetDataPresent(DataFormats.FileDrop)) return;
+        var path = ((string[])e.Data.GetData(DataFormats.FileDrop)!)[0];
         if(!Directory.Exists(path)) return;
 
         await AssignAlbumPath(path);
@@ -224,7 +223,7 @@ public partial class FormMain : Form
     }
 
     void SetRadioButton(string v, string category) {
-        RadioButton rb = (RadioButton)this.Controls[0].Controls[v].Controls[v + category];
+        RadioButton rb = (RadioButton)this.Controls[0].Controls[v]!.Controls[v + category]!;
         rb.Select();
     }
 
@@ -269,7 +268,7 @@ public partial class FormMain : Form
     private void AddSourceAndContentFromUIToList() {
         try {
             //Somehow only newtonsoft deserializer works
-            var newSnc = JsonConvert.DeserializeObject<SourceAndContent>(txtSrcJson.Text);
+            var newSnc = JsonConvert.DeserializeObject<SourceAndContent>(txtSrcJson.Text)!;
             newSnc.Source.SubTitle = txtSrcSubtitle.Text;
 
             var existingSnc = _tempSourceAndContents.FirstOrDefault(a => a.Source.Url == newSnc.Source.Url);
@@ -292,7 +291,7 @@ public partial class FormMain : Form
             return;
 
         try {
-            var snc = JsonConvert.DeserializeObject<SourceAndContent>(txtSrcJson.Text);
+            var snc = JsonConvert.DeserializeObject<SourceAndContent>(txtSrcJson.Text)!;
 
             txtSrcTitle.Text = snc.Source.Title;
             txtSrcSubtitle.Text = "";
@@ -323,7 +322,7 @@ public partial class FormMain : Form
         _viewModel.Album.IsWip = chkIsWipTrue.Checked;
         _viewModel.Album.IsRead = chkIsReadTrue.Checked;
 
-        var splitTag = JsonConvert.DeserializeObject<SplitTagModel>(txtTags.Text);
+        var splitTag = JsonConvert.DeserializeObject<SplitTagModel>(txtTags.Text)!;
         _viewModel.Album.Povs = splitTag.Povs;
         _viewModel.Album.Focuses = splitTag.Focuses;
         _viewModel.Album.Others = splitTag.Others;
@@ -334,7 +333,7 @@ public partial class FormMain : Form
     }
 
     private string GetFromRadioButton(string v) {
-        foreach(Control c in this.Controls[0].Controls[v].Controls) {
+        foreach(Control c in this.Controls[0].Controls[v]!.Controls) {
             if(((RadioButton)c).Checked) {
                 if(v == "rbCat")
                     return c.Name.Replace("rbCat", "");
@@ -362,7 +361,7 @@ public partial class FormMain : Form
 
     #region Next/Prev
     string GetRelativeFolder(string currentFolder, int step) {
-        string rootFolder = Path.GetDirectoryName(currentFolder);
+        string rootFolder = Path.GetDirectoryName(currentFolder)!;
         string[] allFolders = Directory.GetDirectories(rootFolder).OrderByAlphaNumeric(a => a).ToArray();
 
         int relativeFolderIndex = (Array.IndexOf(allFolders, currentFolder) + step) % allFolders.Length;
@@ -375,7 +374,7 @@ public partial class FormMain : Form
             //TODO refactor - MERGE 1
             string fullPath = string.IsNullOrEmpty(_cachedFolderNext) ? GetRelativeFolder(_viewModel.Path, 1) : _cachedFolderNext;
             _currentRootFolder = fullPath.Replace(fullPath.Split('\\').Last(), "");
-            _viewModel = await _al.GetAlbumViewModelAsync(fullPath, _viewModel?.Album);
+            _viewModel = await _al.GetAlbumViewModelAsync(fullPath, _viewModel.Album);
             _srcFileDisplays = _al.GetFileDisplayModels(_viewModel.Path, _viewModel.AlbumFiles, int.Parse(txtUpscaleTarget.Text), chkClamp.Checked);
             _dstFileDisplays = null;
             _tempSourceAndContents = new();
@@ -391,7 +390,7 @@ public partial class FormMain : Form
             //TODO refactor - MERGE 1
             string fullPath = string.IsNullOrEmpty(_cachedFolderPrev) ? GetRelativeFolder(_viewModel.Path, -1) : _cachedFolderPrev;
             _currentRootFolder = fullPath.Replace(fullPath.Split('\\').Last(), "");
-            _viewModel = await _al.GetAlbumViewModelAsync(fullPath, _viewModel?.Album);
+            _viewModel = await _al.GetAlbumViewModelAsync(fullPath, _viewModel.Album);
             _srcFileDisplays = _al.GetFileDisplayModels(_viewModel.Path, _viewModel.AlbumFiles, int.Parse(txtUpscaleTarget.Text), chkClamp.Checked);
             _dstFileDisplays = null;
             _tempSourceAndContents = new();
@@ -488,7 +487,7 @@ public partial class FormMain : Form
     private void CbTags_SelectedIndexChanged(object sender, EventArgs e) { }
 
     private void btnPopupTags_Click(object sender, EventArgs e) {
-        FormTags formTags = new FormTags(this, _ai, JsonConvert.DeserializeObject<SplitTagModel>(txtTags.Text));
+        FormTags formTags = new FormTags(this, _ai, JsonConvert.DeserializeObject<SplitTagModel>(txtTags.Text)!);
         formTags.StartPosition = FormStartPosition.Manual;
         formTags.ShowInTaskbar = false;
         formTags.ShowIcon = false;
@@ -550,11 +549,11 @@ public partial class FormMain : Form
         UpdateProgress("Posting Album...");
         var progress = new Progress<FileDisplayModel>(model => {
             if(_dstFileDisplays != null) {
-                var uploadedFile = _dstFileDisplays.FirstOrDefault(fd => fd.Path == model.Path);
+                var uploadedFile = _dstFileDisplays.First(fd => fd.Path == model.Path);
                 uploadedFile.UploadStatus = model.UploadStatus;
             }
             else {
-                var uploadedFile = _srcFileDisplays.FirstOrDefault(fd => fd.Path == model.Path);
+                var uploadedFile = _srcFileDisplays.First(fd => fd.Path == model.Path);
                 uploadedFile.UploadStatus = model.UploadStatus;
             }
 

@@ -17,7 +17,10 @@ namespace ZBenchmark;
 [RankColumn]
 public class FileSystemBenchmark2
 {
-    static AlbumInfoProvider _ai = new AlbumInfoProvider();
+    static AlbumInfoProvider _ai = new AlbumInfoProvider {
+        EUrl = "",
+        NUrl = "",
+    };
     static SystemIOAbstraction _io = new SystemIOAbstraction();
     static string source = @"D:\Production\WKRAPI";
     static string[] suitableFileFormats = new string[] { ".json", ".txt" };

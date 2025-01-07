@@ -8,13 +8,10 @@ using Serilog;
 
 namespace CoreAPI.CustomMiddlewares;
 
-public class CustomExceptionMiddleware
+public class CustomExceptionMiddleware(
+    RequestDelegate _next
+    )
 {
-    private readonly RequestDelegate _next;
-
-    public CustomExceptionMiddleware(RequestDelegate next) {
-        _next = next;
-    }
     public async Task Invoke(HttpContext context) {
         try {
             await _next.Invoke(context);

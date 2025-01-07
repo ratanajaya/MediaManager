@@ -68,8 +68,8 @@ export default function ReaderModalContextMenu(props:{
           }
           {props.type === 0 && 
             <div className=' text-center'>
-              {props.albumCm.artistDisplay.split(',').map(a => a.trim()).map(a => (
-                <Button type="link" onClick={() => props.onArtistClick(a)}>
+              {props.albumCm.artistDisplay.split(',').map(a => a.trim()).map((a, i) => (
+                <Button key={i} type="link" onClick={() => props.onArtistClick(a)}>
                   {a}
                 </Button>
               ))}

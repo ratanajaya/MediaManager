@@ -8,6 +8,7 @@ using SharedLibrary.Models;
 
 namespace SharedLibrary.Helpers;
 
+#pragma warning disable CA1416 // Validate platform compatibility
 public static class ImageHelper
 {
     public static Bitmap ResizeToResolutionLimit(this Bitmap source, int maxSize) {

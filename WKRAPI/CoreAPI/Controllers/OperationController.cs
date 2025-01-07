@@ -12,14 +12,10 @@ namespace CoreAPI.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]/[action]")]
-public class OperationController : ControllerBase
+public class OperationController(
+    OperationService _os
+    ) : ControllerBase
 {
-    private OperationService _os;
-
-    public OperationController(OperationService os) {
-        _os = os;
-    }
-
     #region Correction
     [HttpPost]
     public IActionResult HScanCorrectiblePaths(HScanCorrectiblePathParam param) {

@@ -24,7 +24,10 @@ public class LibraryRepositoryTest
         var config = MockProvider.GetConfig();
         _dbMock = MockProvider.GetIDbContext();
 
-        var ai = new AlbumInfoProvider();
+        var ai = new AlbumInfoProvider {
+            EUrl = "",
+            NUrl = "",
+        };
         _ioMock = new Mock<ISystemIOAbstraction>();
         _sqliteMock = new Mock<ILogDbContext>();
 

@@ -35,11 +35,11 @@ static class Program
         container.Register<ISystemIOAbstraction, SystemIOAbstraction>(Lifestyle.Singleton);
         container.Register<FormMain>(Lifestyle.Singleton);
         var configuration = new MetadataEditorConfig {
-            BrowsePath = ConfigurationManager.AppSettings["BrowsePath"],
+            BrowsePath = ConfigurationManager.AppSettings["BrowsePath"]!,
             Args = args
         };
         container.RegisterInstance(configuration);
-        var ai = JsonSerializer.Deserialize<AlbumInfoProvider>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "albumInfo.json")));
+        var ai = JsonSerializer.Deserialize<AlbumInfoProvider>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "albumInfo.json")))!;
         container.RegisterInstance(ai);
 
         #region Services from API project
@@ -53,11 +53,14 @@ static class Program
         container.Register<ImageProcessor>(Lifestyle.Singleton);
 
         var apiConf = new CoreAPI.AL.Models.Config.CoreApiConfig {
-            LibraryPath = ConfigurationManager.AppSettings["LibraryPath"],
-            TempPath = ConfigurationManager.AppSettings["TempPath"],
+            LibraryPath = ConfigurationManager.AppSettings["LibraryPath"]!,
+            TempPath = ConfigurationManager.AppSettings["TempPath"]!,
             BuildType = "Private",
             AppType = "MetadataEditor",
-            ProcessorApiUrl = ConfigurationManager.AppSettings["ProcessorApiUrl"]
+            ProcessorApiUrl = ConfigurationManager.AppSettings["ProcessorApiUrl"]!,
+            Version = "Not Set",
+            PortableBrowserPath = "Not Set",
+            ScLibraryPath = "Not Set"
         };
         container.RegisterInstance(apiConf);
         var logger = new LoggerConfiguration()

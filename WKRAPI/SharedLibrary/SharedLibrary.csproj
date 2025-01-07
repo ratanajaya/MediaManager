@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="albumInfo.json" />
@@ -12,8 +13,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MediaInfo.Wrapper.Core" Version="21.9.3" />
-    <PackageReference Include="MessagePack" Version="2.5.140" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.2" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
+    <PackageReference Include="MessagePack" Version="3.1.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
   </ItemGroup>
 </Project>

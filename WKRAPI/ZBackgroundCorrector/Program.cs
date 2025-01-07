@@ -30,7 +30,7 @@ class Program
 
         var configuration = configurationBuilder.Build();
 
-        _mainApiUrl = configuration["MainApiUrl"];
+        _mainApiUrl = configuration["MainApiUrl"]!;
 
         Log.Logger = new LoggerConfiguration()
               .Enrich.FromLogContext()
@@ -40,17 +40,16 @@ class Program
               .CreateLogger();
         Log.Information("~START~");
         Console.WriteLine("Password:");
-        var password = Console.ReadLine();
-        var authToken = await Login(password);
+        var authToken = await Login(Console.ReadLine()!);
         Console.WriteLine($"AuthToken: {authToken}");
 
 
-        Console.WriteLine("UpscaleTarget: ");
-        var upscaleTarget = int.Parse(Console.ReadLine());
+        Console.WriteLine("UpscaleTarget: (a. 1280 | b. 1600)");
+        var selectedTarget = Console.ReadLine();
+        var upscaleTarget = selectedTarget == "a" ? 1280 : selectedTarget == "b" ? 1600 : throw new Exception();
 
         Console.WriteLine("Thread: ");
-        var threadStr = Console.ReadLine();
-        var thread = Math.Clamp(int.Parse(threadStr), 1, 5);
+        var thread = Math.Clamp(int.Parse(Console.ReadLine()!), 1, 4);
         Console.WriteLine();
         Console.WriteLine("a. H Correction");
         Console.WriteLine("b. SC Correction");
