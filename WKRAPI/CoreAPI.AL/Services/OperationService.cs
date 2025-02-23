@@ -17,6 +17,10 @@ using System.Text;
 using System.Threading.Tasks;
 using CoreAPI.AL.Models.Dto;
 using CoreAPI.AL.Models.Config;
+using CoreAPI.AL.Hubs;
+using Microsoft.AspNetCore.SignalR;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace CoreAPI.AL.Services;
 
@@ -28,9 +32,12 @@ public class OperationService(
     ImageProcessor _ip,
     ILogDbContext _logDb,
     LibraryRepository _library,
-    GoogleService _google
+    GoogleService _google,
+    IHubContext<ProgressHub> _hubContext
     )
 {
+    private readonly ConcurrentDictionary<string, bool> _activeOperations = new();
+
     #region Correction
     public List<PathCorrectionModel> HScanCorrectiblePages(List<string> libRelPaths, int thread, int upscaleTarget) {
         var result = libRelPaths.Select(a => new PathCorrectionModel {
@@ -73,7 +80,7 @@ public class OperationService(
         foreach(var path in correctablePaths) {
             var correctablePageCount = (GetCorrectablePages(1, path.LibRelPath, thread, upscaleTarget, false)).Count;
 
-            _logDb.UpdateCorrectionLog(path.LibRelPath, null, correctablePageCount);
+            _logDb.UpsertCorrectionLog(path.LibRelPath, null, correctablePageCount);
 
             path.CorrectablePageCount = correctablePageCount;
         }
@@ -81,6 +88,7 @@ public class OperationService(
         return correctablePaths;
     }
 
+    //Warning: Duplicate logic with AppLogic.GetFileCorrectionModel
     public List<FileCorrectionModel?> GetCorrectablePages(int type, string libRelAlbumPath, int thread, int upscaleTarget, bool clampToTarget) {
         int trueThread = Math.Clamp(thread, 1, 5);
         //This method becomes unstable and produces faulty images if performing upscaling/compression using 6 threads
@@ -121,25 +129,30 @@ public class OperationService(
                 try {
                     var newFcm = GetFileCorrectionModel(fileInfo, fullAlbumPath);
 
-                    float? multiplier = ImageHelper.DetermineUpscaleMultiplier(newFcm, upscaleTarget);
-                    if(multiplier.HasValue) {
-                        newFcm.CorrectionType = FileCorrectionType.Upscale;
-                        newFcm.UpscaleMultiplier = multiplier;
-                        newFcm.Compression = ImageHelper.DetermineCompressionCondition(
-                            (int)(multiplier.Value * newFcm.Height), 
-                            (int)(multiplier.Value * newFcm.Width), 
-                            newFcm.Extension == Constants.Extension.Png,
-                            clampToTarget ? upscaleTarget : null
-                        );
+                    if(newFcm.IsAnimated) {
+                        newFcm.CorrectionType = null;
                     }
-                    else if(ImageHelper.IsLargeEnoughForCompression(newFcm)) {
-                        newFcm.CorrectionType = FileCorrectionType.Compress;
-                        newFcm.Compression = ImageHelper.DetermineCompressionCondition(
-                            newFcm.Height, 
-                            newFcm.Width, 
-                            newFcm.Extension == Constants.Extension.Png,
-                            null //clampToTarget ? upscaleTarget : null //Don't to target if compression is the only operation
-                        );
+                    else {
+                        float? multiplier = ImageHelper.DetermineUpscaleMultiplier(newFcm, upscaleTarget);
+                        if(multiplier.HasValue) {
+                            newFcm.CorrectionType = FileCorrectionType.Upscale;
+                            newFcm.UpscaleMultiplier = multiplier;
+                            newFcm.Compression = ImageHelper.DetermineCompressionCondition(
+                                (int)(multiplier.Value * newFcm.Height),
+                                (int)(multiplier.Value * newFcm.Width),
+                                newFcm.Extension == Constants.Extension.Png,
+                                clampToTarget ? upscaleTarget : null
+                            );
+                        }
+                        else if(ImageHelper.IsLargeEnoughForCompression(newFcm)) {
+                            newFcm.CorrectionType = FileCorrectionType.Compress;
+                            newFcm.Compression = ImageHelper.DetermineCompressionCondition(
+                                newFcm.Height,
+                                newFcm.Width,
+                                newFcm.Extension == Constants.Extension.Png,
+                                null //clampToTarget ? upscaleTarget : null //Don't to target if compression is the only operation
+                            );
+                        }
                     }
 
                     correctionModelAboveLastDate[i] = newFcm;
@@ -163,10 +176,9 @@ public class OperationService(
         }
     }
 
+    //Warning: Duplicate logic with AppLogic.CorrectPages
     public async Task<FileCorrectionReportModel[]> CorrectPages(CorrectPageParam param) {
         var trueThread = Math.Clamp(param.Thread, 1, 5);
-        //This method becomes unstable and produces faulty images if performing upscaling/compression using 6 threads
-        //Tested with 6 Core Ryzen 5 5600 6-Core CPU
 
         var batchStart = DateTime.Now;
 
@@ -230,13 +242,13 @@ public class OperationService(
             await Parallel.ForAsync(0, fileCount, new ParallelOptions { MaxDegreeOfParallelism = trueThread }, async (i, state) => {
                 var messageSb = new StringBuilder();
                 var src = fileList[i];
-                var toJpegExcludingWebp = src.Extension == Constants.Extension.Webp ? false : param.ToJpeg;
+                var toWebp = src.Extension == Constants.Extension.Webp ? false : param.ToWebp;
 
                 try {
                     var processorApiParam = new UpscaleCompressApiParam {
                         UpscaleMultiplier = src.UpscaleMultiplier,
                         UpscalerType = param.UpscalerType,
-                        ToJpeg = toJpegExcludingWebp,
+                        ToWebp = toWebp,
 
                         CorrectionType = src.CorrectionType!.Value,
                         Compression = src.Compression,
@@ -245,7 +257,7 @@ public class OperationService(
 
                     var fullOriPath = Path.Combine(fullAlbumPath, src.AlRelPath!);
 
-                    var fullDstPath = toJpegExcludingWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.jpeg" : fullOriPath;
+                    var fullDstPath = toWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.webp" : fullOriPath;
 
                     using(var client = new HttpClient())
                     using(var form = new MultipartFormDataContent()) {
@@ -295,7 +307,7 @@ public class OperationService(
 
             if(report.All(a => a.Success)) {
                 if(param.Type == 0) {
-                    _logDb.InsertAlbumCorrection(new AlbumCorrection {
+                    _logDb.UpsertAlbumCorrection(new AlbumCorrection {
                         LibRelPath = param.LibRelPath,
                         CorrectedPage = fileCount,
                         BatchStartDate = batchStart,
@@ -303,7 +315,7 @@ public class OperationService(
                     });
                 }
                 else
-                    _logDb.UpdateCorrectionLog(param.LibRelPath, DateTime.Now, 0);
+                    _logDb.UpsertCorrectionLog(param.LibRelPath, DateTime.Now, 0);
             }
 
             if((LibraryType)param.Type == LibraryType.Regular) {
@@ -337,6 +349,219 @@ public class OperationService(
         }
     }
 
+
+    public async Task<FileCorrectionReportModel[]> CorrectPagesSignalr(string operationId, CorrectPageParam param) {
+        _activeOperations.TryAdd(operationId, true);
+
+        var trueThread = Math.Clamp(param.Thread, 1, 5);
+
+        var batchStart = DateTime.Now;
+
+        try {
+            var sw = new Stopwatch();
+            sw.Start();
+
+            #region Setup parameters
+            var libPath = _config.GetLibraryPath((LibraryType)param.Type);
+            var fullAlbumPath = Path.Combine(libPath, param.LibRelPath);
+
+            var fileCount = param.FileToCorrectList.Count;
+
+            FileCorrectionModel[] fileList = new Func<FileCorrectionModel[]>(() => {
+                int cStart = param.FileToCorrectList.FindIndex(a => a.CorrectionType == FileCorrectionType.Compress);
+                if(cStart == fileCount - 1 || cStart == -1)
+                    return param.FileToCorrectList.ToArray();
+
+                int uStart = 0;
+                int cCount = fileCount - cStart;
+                int uCount = fileCount - cCount;
+
+                var sortedArr = new FileCorrectionModel[fileCount];
+                for(int i = 0; i < fileCount; i++) {
+                    if(i % 2 == 0) {
+                        if(uStart < uCount) {
+                            sortedArr[i] = param.FileToCorrectList[uStart];
+                            uStart++;
+                        }
+                        else {
+                            sortedArr[i] = param.FileToCorrectList[cStart];
+                            cStart++;
+                        }
+                    }
+                    else {
+                        if(cStart < fileCount) {
+                            sortedArr[i] = param.FileToCorrectList[cStart];
+                            cStart++;
+                        }
+                        else {
+                            sortedArr[i] = param.FileToCorrectList[uStart];
+                            uStart++;
+                        }
+                    }
+                }
+
+                return sortedArr;
+            })();
+
+            var report = new FileCorrectionReportModel[fileCount];
+
+            int[] possibleUpscaleMultipliers = new List<UpscalerType> { UpscalerType.Waifu2xCunet, UpscalerType.Waifu2xAnime }.Contains(param.UpscalerType)
+                ? new int[] { 2, 4, 8 }
+                : new int[] { 4, 8 };
+
+            Func<string, string, int, UpscalerType, int?, string> upscaleMethod = new List<UpscalerType> { UpscalerType.Waifu2xCunet, UpscalerType.Waifu2xAnime }.Contains(param.UpscalerType)
+                ? _ip.UpscaleImageWaifu2x
+                : UpscalerType.SrganD2fkJpeg == param.UpscalerType
+                ? _ip.UpscaleImageRealSr
+                : _ip.UpscaleImageRealEsrGan;
+            #endregion
+
+            await Parallel.ForAsync(0, fileCount, new ParallelOptions { MaxDegreeOfParallelism = trueThread }, async (i, state) => {
+                var src = fileList[i];
+                var toWebp = src.Extension == Constants.Extension.Webp ? false : param.ToWebp;
+
+                try {
+                    var processorApiParam = new UpscaleCompressApiParam {
+                        UpscaleMultiplier = src.UpscaleMultiplier,
+                        UpscalerType = param.UpscalerType,
+                        ToWebp = toWebp,
+
+                        CorrectionType = src.CorrectionType!.Value,
+                        Compression = src.Compression,
+                        Extension = src.Extension!
+                    };
+
+                    var fullOriPath = Path.Combine(fullAlbumPath, src.AlRelPath!);
+
+                    var fullDstPath = toWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.webp" : fullOriPath;
+
+                    using(var client = new HttpClient())
+                    using(var form = new MultipartFormDataContent()) {
+                        form.Add(new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(processorApiParam)), "paramJson");
+
+                        var fileContent = new ByteArrayContent(_io.ReadFile(fullOriPath));
+                        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("multipart/form-data");
+                        form.Add(fileContent, "file", Path.GetFileName(fullOriPath));
+
+                        var response = await client.PostAsync($"{_config.ProcessorApiUrl}/Image/UpscaleCompress", form);
+
+                        if(response.IsSuccessStatusCode) {
+                            var responseStream = response.Content.ReadAsStream();
+
+                            _io.DeleteFile(fullOriPath);
+
+                            using(var fileStream = new FileStream(fullDstPath, FileMode.Create, FileAccess.Write, FileShare.None)) {
+                                await responseStream.CopyToAsync(fileStream);
+                            }
+
+                            var alRelDstPath = Path.GetRelativePath(fullAlbumPath, fullDstPath);
+
+                            var cm = GetFileCorrectionModel(new FileInfo(Path.Combine(fullAlbumPath, alRelDstPath)), fullAlbumPath);
+
+                            report[i] = new() {
+                                AlRelPath = src.AlRelPath,
+                                AlRelDstPath = alRelDstPath,
+                                Success = true,
+                                Height = cm.Height,
+                                Width = cm.Width,
+                                Byte = cm.Byte,
+                                BytesPer100Pixel = cm.BytesPer100Pixel,
+                            };
+
+                            await _hubContext.Clients.Group(operationId).SendAsync("ReceiveProgress", new SignalrMessage<FileCorrectionReportModel> {
+                                MessageType = SignalrMessageType.Progress,
+                                Data = report[i],
+                            });
+                        }
+                        else {
+                            var message = await response.Content.ReadAsStringAsync();
+                            report[i] = new() {
+                                AlRelPath = src.AlRelPath,
+                                AlRelDstPath = Path.GetRelativePath(fullAlbumPath, fullDstPath),
+                                Success = false,
+                                Message = $"Code: {response.StatusCode} | {message}"
+                            };
+
+                            await _hubContext.Clients.Group(operationId).SendAsync("ReceiveProgress", new SignalrMessage<FileCorrectionReportModel> {
+                                MessageType = SignalrMessageType.Progress,
+                                Data = report[i],
+                            });
+                        }
+                    }
+                }
+                catch(Exception e) {
+                    report[i] = new() {
+                        AlRelPath = src.AlRelPath,
+                        Success = false,
+                        Message = e.Message
+                    };
+
+                    await _hubContext.Clients.Group(operationId).SendAsync("ReceiveProgress", new SignalrMessage<FileCorrectionReportModel> {
+                        MessageType = SignalrMessageType.Progress,
+                        Data = report[i]
+                    });
+                }
+            });
+
+            if(report.All(a => a.Success)) {
+                if(param.Type == 0) {
+                    _logDb.UpsertAlbumCorrection(new AlbumCorrection {
+                        LibRelPath = param.LibRelPath,
+                        CorrectedPage = fileCount,
+                        BatchStartDate = batchStart,
+                        CorrectionFinishDate = DateTime.Now,
+                    });
+                }
+                else
+                    _logDb.UpsertCorrectionLog(param.LibRelPath, DateTime.Now, 0);
+            }
+
+            if((LibraryType)param.Type == LibraryType.Regular) {
+                _library.RecountAlbumPages(param.LibRelPath);
+                _library.DeleteAlbumCache(param.LibRelPath);
+            }
+
+            #region To delete
+            //_logger.Information($"Corrected {fileCount} pages in {sw.Elapsed.TotalSeconds} secs");
+
+            //Parallel.For(0, report.Length, new ParallelOptions { MaxDegreeOfParallelism = trueThread }, (i, state) => {
+            //    var src = report[i];
+
+            //    if(src.Success) {
+            //        var cm = GetFileCorrectionModel(new FileInfo(Path.Combine(fullAlbumPath, src.AlRelDstPath!)), fullAlbumPath);
+
+            //        src.Height = cm.Height;
+            //        src.Width = cm.Width;
+            //        src.Byte = cm.Byte;
+            //        src.BytesPer100Pixel = cm.BytesPer100Pixel;
+            //    }
+            //});
+            #endregion
+
+            await _hubContext.Clients.Group(operationId).SendAsync("ReceiveProgress", new SignalrMessage<FileCorrectionReportModel> {
+                MessageType = SignalrMessageType.Complete,
+                Message = $"Corrected {fileCount} pages in {sw.Elapsed.TotalSeconds} secs",
+            });
+
+            return report;
+        }
+        catch(Exception e) {
+            _logger.Error($"ScRepository.CorrectPages{Environment.NewLine}" +
+                $"Params=[{System.Text.Json.JsonSerializer.Serialize(param)}]{Environment.NewLine}" +
+                $"{e}");
+
+            await _hubContext.Clients.Group(operationId).SendAsync("ReceiveProgress", new SignalrMessage<FileCorrectionReportModel> {
+                MessageType = SignalrMessageType.Error,
+                Message = e.Message,
+            });
+
+            throw;
+        }
+        finally {
+            _activeOperations.TryRemove(operationId, out _);
+        }
+    }
+
     FileCorrectionModel GetFileCorrectionModel(FileInfo fileInfo, string fullAlbumPath) {
         using(var img = SixLabors.ImageSharp.Image.Load(fileInfo.FullName)) {
             return new FileCorrectionModel {
@@ -346,6 +571,7 @@ public class OperationService(
                 ModifiedDate = fileInfo.LastWriteTime,
                 Height = img.Height,
                 Width = img.Width,
+                IsAnimated = img.Frames.Count > 1
             };
         }
     }

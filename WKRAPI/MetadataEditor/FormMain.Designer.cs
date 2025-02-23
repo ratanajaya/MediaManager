@@ -369,7 +369,7 @@
             txtUpscaleTarget.Name = "txtUpscaleTarget";
             txtUpscaleTarget.Size = new System.Drawing.Size(50, 26);
             txtUpscaleTarget.TabIndex = 98;
-            txtUpscaleTarget.Text = "1280";
+            txtUpscaleTarget.Text = "1600";
             // 
             // listViewProgress
             // 

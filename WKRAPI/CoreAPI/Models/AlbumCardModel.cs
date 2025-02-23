@@ -12,6 +12,7 @@ public class AlbumCardModel
     public bool IsWip { get; set; }
     public int Tier { get; set; }
     public int LastPageIndex { get; set; }
+    public string? LastPageAlRelPath { get; set; }
     public int PageCount { get; set; }
     public string? Note { get; set; }
     public int CorrectablePageCount { get; set; }

@@ -29,6 +29,7 @@ public class FileCorrectionModel
 
     public float? UpscaleMultiplier { get; set; }
     public CompressionCondition? Compression { get; set; }
+    public bool IsAnimated { get; set; }
 }
 
 public class FileCorrectionReportModel
@@ -52,7 +53,7 @@ public class UpscaleCompressApiParam
 
     public float? UpscaleMultiplier { get; set; }
     public CompressionCondition? Compression { get; set; }
-    public bool ToJpeg { get; set; }
+    public bool ToWebp { get; set; }
     public required string Extension { get; set; }
 }
 

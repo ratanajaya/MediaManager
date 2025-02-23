@@ -18,7 +18,7 @@ public class ImageProcessor
 {
     #region From ImageCompressor.cs
     public bool CompressImage(string filePath, string savePath, int quality, Size size, SupportedMimeType type) {
-        if(Path.GetExtension(filePath) == Constants.Extension.Webp)
+        if(Path.GetExtension(filePath) == Constants.Extension.Webp || type == SupportedMimeType.WEBP)
             return CompressWebp(filePath, savePath, quality, size);
 
         return CompressJpegPng(filePath, savePath, quality, size, type);
@@ -369,5 +369,6 @@ public enum SupportedMimeType
 {
     JPEG,
     PNG,
-    ORIGINAL
+    ORIGINAL,
+    WEBP
 }

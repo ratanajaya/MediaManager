@@ -7,6 +7,7 @@ public class AlbumVM
     public required string Path { get; set; }
     public int PageCount { get; set; }
     public int LastPageIndex { get; set; }
+    public string? LastPageAlRelPath { get; set; }
     public int CorrectablePageCount { get; set; }
     public FileInfoModel? CoverInfo { get; set; }
     public required Album Album { get; set; }

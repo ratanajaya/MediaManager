@@ -15,7 +15,10 @@ public class ImageController(
     ) : ControllerBase
 {
     [HttpPost]
+    [ApiExplorerSettings(IgnoreApi = true)]
+    //NOTE: Swagger will fail to generate documentation due to [FromForm]
     public IActionResult UpscaleCompress([FromForm] string paramJson, [FromForm] IFormFile file) {
+    //public IActionResult UpscaleCompress(string paramJson, IFormFile file) {
         try {
             var param = JsonSerializer.Deserialize<UpscaleCompressApiParam>(paramJson);
 
@@ -46,7 +49,7 @@ public class ImageController(
 
             var originalFilePath = Path.Combine(originalDirPath, stagingName);
             var upscaledFilePath = Path.Combine(upscaledDirPath, stagingName);
-            var finalFilePath = Path.Combine(finalDirPath, param.ToJpeg ? $"{guid}.jpeg" : stagingName);
+            var finalFilePath = Path.Combine(finalDirPath, param.ToWebp ? $"{guid}.webp" : stagingName);
             #endregion
 
             using(var stream = new FileStream(originalFilePath, FileMode.Create)) {
@@ -68,9 +71,9 @@ public class ImageController(
 
             var fileToCompressPath = param.CorrectionType == FileCorrectionType.Upscale ? upscaledFilePath : originalFilePath;
 
-            var mimeType = param.ToJpeg ? SupportedMimeType.JPEG : SupportedMimeType.ORIGINAL;
+            var mimeType = param.ToWebp ? SupportedMimeType.WEBP : SupportedMimeType.ORIGINAL;
             var compressOutput = _ip.CompressImage(fileToCompressPath, finalFilePath,
-                param.Compression.Quality, new Size(param.Compression.Width, param.Compression.Height),
+                param.Compression!.Quality, new Size(param.Compression.Width, param.Compression.Height),
                 mimeType);
 
             System.IO.File.Delete(originalFilePath);

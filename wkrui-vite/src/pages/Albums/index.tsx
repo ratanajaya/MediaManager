@@ -112,12 +112,13 @@ export default function Albums(props: {
       const acm = possibleAlbums[_helper.getRandomInt(0, possibleAlbums.length)];
       readerHandler.view(acm);
     },
-    close: (path: string, lastPageIndex: number) => {
+    close: (path: string, lastPageIndex: number, lastPageAlRelPath: string | null) => {
       setSelectedAlbumCm(null);
 
       axiosA.post(_uri.UpdateAlbumOuterValue(type), {
         albumPath: path,
-        lastPageIndex: lastPageIndex
+        lastPageIndex: lastPageIndex,
+        lastPageAlRelPath: lastPageAlRelPath
       })
         .then((response) => { })
         .catch((error) => {

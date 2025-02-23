@@ -184,6 +184,7 @@ public partial class FormMain : Form
                     pctCover.Image = bitmap;
                 }
             }
+            pctCover.SizeMode = PictureBoxSizeMode.Zoom;
         }
         else if(_ai.SuitableImageFormats.Contains(extension)) {
             using(var fs = File.Open(_viewModel.AlbumFiles[_currentFileIndex], FileMode.Open, FileAccess.Read, FileShare.Read)) {

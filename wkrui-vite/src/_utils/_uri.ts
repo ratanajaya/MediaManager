@@ -284,6 +284,10 @@ const CorrectPages = () => {
   return `${operation}CorrectPages`;
 }
 
+const CorrectPagesSignalr = () => {
+  return `${operation}CorrectPagesSignalr`;
+}
+
 const TranscribeAndTranslateImage = () => {
   return `${operation}TranscribeAndTranslateImage`;
 }
@@ -293,6 +297,10 @@ const TranscribeAndTranslateImage = () => {
 const Login = () => {
   return `${apiBaseUrl}Auth/Login`;
 }
+//#endregion
+
+//#region SignalR
+const ProgressHub = () => (`${apiBaseUrl}progressHub`);
 //#endregion
 
 const _uri = {
@@ -360,9 +368,11 @@ const _uri = {
   ScFullScanCorrectiblePaths,
   GetCorrectablePages,
   CorrectPages,
+  CorrectPagesSignalr,
   TranscribeAndTranslateImage,
 
-  Login
+  Login,
+  ProgressHub
 };
 
 export default _uri;

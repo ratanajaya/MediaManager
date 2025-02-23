@@ -26,6 +26,7 @@ export type AlbumCardModel = {
   hasSource: boolean;
   tier: number;
   lastPageIndex: number;
+  lastPageAlRelPath: string | null;
   pageCount: number;
   note: string;
   coverInfo: FileInfoModel;
@@ -237,7 +238,7 @@ export interface CorrectPageParam {
   thread: number;
   upscalerType: number;
   fileToCorrectList: FileCorrectionModel[];
-  toJpeg: boolean;
+  toWebp: boolean;
 }
 
 export enum NodeType {
@@ -312,4 +313,16 @@ export interface Response {
 
 export interface ResponseResult<T> extends Response {
     result: T;
+}
+
+export interface SignalrMessage<T> {
+  messageType: SignalrMessageType;
+  message: string | null;
+  data: T | null;
+}
+
+export enum SignalrMessageType {
+  Progress = 1,
+  Complete = 2,
+  Error = 3,
 }

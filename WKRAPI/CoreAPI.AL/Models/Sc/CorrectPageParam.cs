@@ -11,8 +11,5 @@ public class CorrectPageParam
     public int Thread { get; set; }
     public UpscalerType UpscalerType { get; set; }
     public List<FileCorrectionModel> FileToCorrectList { get; set; } = [];
-    /// <summary>
-    /// Doesn't apply for .webp files
-    /// </summary>
-    public bool ToJpeg { get; set; }
+    public bool ToWebp { get; set; }
 }

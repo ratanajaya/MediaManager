@@ -128,6 +128,7 @@ export default function EditModal(props: {
       onCancel={props.onCancel}
       closable={false}
       width={580}
+      style={{ top: 20}}
       footer={
         <div style={{width:'100%', display:'flex', gap:'10px'}}>
           <div style={{flex:'3', display:'flex', gap:'10px'}}>
@@ -262,9 +263,18 @@ export default function EditModal(props: {
               <Item label="Others" name="others">
                 <Multicheck items={albumInfo.others} />
               </Item>
-              <Item label="Rares" name="rares">
-                <Multicheck items={albumInfo.rares} />
-              </Item>
+              <Collapse 
+                bordered={false}
+                expandIcon={({ isActive }) => <CaretRightFilled rotate={isActive ? 90 : 0} />}
+                style={{marginBottom:'0px'}}
+                accordion
+              >
+                <Collapse.Panel className='editPanel' header='Rares' key='raresPanel'>
+                  <Item label="Rares" name="rares">
+                    <Multicheck items={albumInfo.rares} />
+                  </Item>                
+                </Collapse.Panel>
+              </Collapse>
               <Item label="Qualities" name="qualities">
                 <Multicheck items={albumInfo.qualities} />
               </Item>

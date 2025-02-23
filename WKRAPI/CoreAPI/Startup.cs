@@ -18,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
 using SharedLibrary.Models;
+using CoreAPI.AL.Hubs;
 
 namespace CoreAPI;
 
@@ -31,6 +32,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services) {
         services.AddControllers();
+        services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = true;
+        });
 
         services.AddMvc().AddJsonOptions(options =>
         {
@@ -46,6 +51,7 @@ public class Startup
                            .AllowAnyMethod()
                            .AllowAnyHeader()
                            .WithExposedHeaders("Content-Disposition");
+                    // Note: Do not call AllowCredentials() when AllowAnyOrigin() is used
                 });
         });
 
@@ -156,9 +162,8 @@ public class Startup
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-        app.UseCors("AllowAll");
-
         app.UseRouting();
+        app.UseCors("AllowAll");
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -167,6 +172,9 @@ public class Startup
 
         app.UseEndpoints(endpoints => {
             endpoints.MapControllers();
+            endpoints.MapHub<ProgressHub>("/progressHub")
+                .RequireCors("AllowAll") // Apply CORS policy to the hub
+                .AllowAnonymous();
         });
 
         if(env.IsDevelopment()) {

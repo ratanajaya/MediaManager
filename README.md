@@ -11,7 +11,7 @@ Below is the high-level architecture illustrating how each project interacts wit
 ## Project Overview
 
 **Core API (.NET 9)**  
-- Tech: .NET 9, IIS, FFMPEG, MangaOCR
+- Tech: .NET 9, SignalR, IIS, FFMPEG, MangaOCR
 - Role: Central hub for media library management and backend services
 
 **Processor API (.NET 9)**  

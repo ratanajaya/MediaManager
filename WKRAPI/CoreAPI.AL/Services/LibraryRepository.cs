@@ -63,8 +63,6 @@ public class LibraryRepository (
         try {
             var existing = _db.AlbumVMs.Get(albumVM.Path);
 
-            if(existing == null)
-                throw new InvalidOperationException("Album with specified id not found");
             if(existing.Album.EntryDate != albumVM.Album.EntryDate)
                 throw new InvalidOperationException("Update on album's EntryDate is forbidden");
 
@@ -89,9 +87,6 @@ public class LibraryRepository (
     public string DeleteAlbum(string albumPath, bool insertCrudLog = true) {
         try {
             var existing = _db.AlbumVMs.Get(albumPath);
-
-            if(existing == null)
-                throw new InvalidOperationException("Album with specified id not found");
 
             DeleteAlbumFromFileSystem(albumPath);
 
@@ -125,9 +120,6 @@ public class LibraryRepository (
         try {
             var existing = _db.AlbumVMs.Get(albumPath);
 
-            if(existing == null)
-                throw new Exception("Album not found");
-
             var chapterPath = Path.Combine(_config.LibraryPath, existing.Path, subDir);
 
             _io.DeleteDirectory(chapterPath);
@@ -145,15 +137,21 @@ public class LibraryRepository (
         }
     }
 
-    public string UpdateAlbumOuterValue(string albumPath, int lastPageIndex) {
+    public string UpdateAlbumOuterValue(string albumPath, int lastPageIndex, string? lastPageAlRelPath) {
         try {
             var existing = _db.AlbumVMs.Get(albumPath);
 
-            existing.LastPageIndex = lastPageIndex == existing.PageCount - 1 ? 0 : lastPageIndex;
+            if(lastPageIndex == existing.PageCount - 1) {
+                existing.LastPageIndex = 0;
+                existing.LastPageAlRelPath = null;
+            }
+            else {
+                existing.LastPageIndex = lastPageIndex;
+                existing.LastPageAlRelPath = lastPageAlRelPath;
+            }
 
             if(!existing.Album.IsRead && lastPageIndex == existing.PageCount - 1) {
                 existing.Album.IsRead = true;
-                existing.LastPageIndex = 0;
                 if(existing.Album.Note == "HP")
                     existing.Album.Note = "";
                 SaveAlbumMetadata(existing, CrudLog.FirstRead);
@@ -291,7 +289,7 @@ public class LibraryRepository (
 
         _logDb.DeleteAlbumCorrection(libRelAlbumPath);
 
-        var existing = _db.AlbumVMs.Get(libRelAlbumPath);
+        var existing = _db.AlbumVMs.GetOrDefault(libRelAlbumPath);
 
         if(existing != null) {
             ReplaceAlbumWhileKeepingSources(existing, album);
@@ -310,6 +308,7 @@ public class LibraryRepository (
                 Path = libRelAlbumPath,
                 PageCount = 0,
                 LastPageIndex = 0,
+                LastPageAlRelPath = null,
             };
             _db.AddAlbumVM(newAlbum);
             _db.SaveChanges();
@@ -324,7 +323,7 @@ public class LibraryRepository (
         string libRelSubDir = GetLibRelAlbumLocation(firstLetter);
         string libRelAlbumPath = Path.Combine(libRelSubDir, originalFolderName);
 
-        var existing = _db.AlbumVMs.Get(libRelAlbumPath);
+        var existing = _db.AlbumVMs.GetOrDefault(libRelAlbumPath);
         if(existing == null) return "Album does not exist";
 
         ReplaceAlbumWhileKeepingSources(existing, album);

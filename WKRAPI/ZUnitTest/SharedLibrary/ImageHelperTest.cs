@@ -33,7 +33,7 @@ public class ImageHelperTest
     }
 
     [TestMethod]
-    public void DetermineCompressionCondition() {
+    public void DetermineCompressionCondition_NonPng() {
         var res1 = ImageHelper.DetermineCompressionCondition(1600, 1200, false);
 
         Assert.AreEqual(95, res1.Quality);
@@ -58,4 +58,24 @@ public class ImageHelperTest
         Assert.AreEqual(2000, res5.Height);
         Assert.AreEqual(1600, res5.Width);
     }
+
+    [TestMethod]
+    public void DetermineCompressionCondition_Png() {
+        var res1 = ImageHelper.DetermineCompressionCondition(1600, 1200, true);
+
+        Assert.AreEqual(90, res1.Quality);
+        Assert.AreEqual(1200, res1.Width);
+
+        var res2 = ImageHelper.DetermineCompressionCondition(1920, 2400, true);
+
+        Assert.IsTrue(70 < res2.Quality && res2.Quality < 90);
+        Assert.AreEqual(2400, res2.Width);
+
+        var res3 = ImageHelper.DetermineCompressionCondition(6000, 2840, true);
+
+        Assert.AreEqual(70, res3.Quality);
+        Assert.AreEqual(2560, res3.Width);
+        Assert.AreEqual(5408, res3.Height);
+    }
+
 }

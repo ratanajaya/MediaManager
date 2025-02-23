@@ -11,4 +11,5 @@ public class ScMetadataModel
 {
     public required string Path { get; set; }
     public int LastPageIndex { get; set; }
+    public string? LastPageAlRelPath { get; set; }
 }

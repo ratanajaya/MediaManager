@@ -37,6 +37,7 @@ public class ScController(
                 Path = e.LibRelPath,
                 Title = e.Name,
                 LastPageIndex = e.LastPageIndex,
+                LastPageAlRelPath = e.LastPageAlRelPath,
                 PageCount = e.PageCount,
 
                 Languages = new List<string>(),
@@ -69,7 +70,7 @@ public class ScController(
 
     [HttpPost]
     public IActionResult UpdateAlbumOuterValue(AlbumOuterValueParam param) {
-        _sc.UpdateAlbumOuterValue(param.AlbumPath, param.LastPageIndex);
+        _sc.UpdateAlbumOuterValue(param.AlbumPath, param.LastPageIndex, param.LastPageAlRelPath);
         return Ok(param.AlbumPath);
     }
 

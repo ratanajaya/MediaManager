@@ -138,7 +138,17 @@ public static class QueryHelpers
         return true;
     }
 
-    public static AlbumVM Get(this List<AlbumVM> albumVMs, string path) => albumVMs.First(a => a.Path == path);
+    public static AlbumVM Get(this List<AlbumVM> albumVMs, string path) { 
+        var album = albumVMs.FirstOrDefault(a => a.Path == path);
+
+        if(album == null) {
+            throw new InvalidOperationException("Album not found: " + path);
+        }
+
+        return album!;
+    }
+
+    public static AlbumVM? GetOrDefault(this List<AlbumVM> albumVMs, string path) => albumVMs.FirstOrDefault(a => a.Path == path);
 
     public static bool ContainsConnector(string source) => source.IndexOfAny(_cons) > -1;
 

@@ -4,6 +4,7 @@ using CoreAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -41,10 +42,26 @@ public class OperationController(
     public async Task<IActionResult> CorrectPages(CorrectPageParam param) {
         return Ok(await _os.CorrectPages(param));
     }
+
+    [HttpPost]
+    public IActionResult CorrectPagesSignalr(CorrectPageParam param) {
+        // Generate a unique operationId
+        var operationId = Guid.NewGuid().ToString();
+
+        // Start the CorrectPagesAsync operation without awaiting
+        Task.Run(async () =>
+        {
+            await _os.CorrectPagesSignalr(operationId, param);
+        });
+
+        // Return the operationId immediately
+        return Ok(operationId);
+    }
     #endregion
 
     #region OCR
     [HttpPost]
+    //NOTE: Swagger will fail to generate documentation due to [FromForm]
     public IActionResult TranscribeAndTranslateImage([FromForm] IFormFile file) {
         if(file == null || file.Length == 0)
             return BadRequest("No file uploaded");

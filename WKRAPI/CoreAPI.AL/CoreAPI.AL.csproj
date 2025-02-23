@@ -10,6 +10,8 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
     <PackageReference Include="Google.Cloud.Translate.V3" Version="3.9.0" />
     <PackageReference Include="Grpc.Auth" Version="2.67.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />

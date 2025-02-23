@@ -1,12 +1,13 @@
 import { Alert, Button, Checkbox, Select, Space, Tag, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react'
-import { CorrectPageParam, FileCorrectionModel, FileCorrectionReportModel, KeyValuePair, PathCorrectionModel, QueryPart } from '_utils/Types';
+import { CorrectPageParam, FileCorrectionModel, FileCorrectionReportModel, KeyValuePair, PathCorrectionModel, QueryPart, SignalrMessage, SignalrMessageType } from '_utils/Types';
 import _uri from '_utils/_uri';
 import _helper from "_utils/_helper";
 import { LoadingOutlined } from '@ant-design/icons';
 import _constant from '_utils/_constant';
 import { useAuth } from '_shared/Contexts/useAuth';
 import useNotification from '_shared/Contexts/NotifProvider';
+import * as signalR from '@microsoft/signalr';
 
 const { Text } = Typography;
 
@@ -28,21 +29,26 @@ export default function ScCorrection(props: IScCorrectionProps) {
   const [upscalerOptions, setUpscalerOptions] = useState<any[]>([]);
   const [selectedUpscaler, setSelectedUpscaler] = useState<number | null>(301);
   const [limitToCorrectablePath, setLimitToCorrectablePath] = useState<boolean>(false);
-  const [toJpeg, setToJpeg] = useState<boolean>(false);
+  const [toWebp, setToWebp] = useState<boolean>(false);
   const [clampToTarget, setClampToTarget] = useState<boolean>(false);
 
   const [fileToCorrect, setFileToCorrect] = useState<FileCorrectionModel[]>([]);
   const [reports, setReports] = useState<FileCorrectionReportModel[]>([]);
-  const [loadingSt, setLoadingSt] = useState<{loading: boolean, message: string}>({ loading: false, message: '' });
+  const [opStatus, setOpStatus] = useState<{apiLoading: boolean, ongoingOperation: boolean, message: string}>({ 
+    apiLoading: false,
+    ongoingOperation: false,
+    message: '' 
+  });
 
   const hPath = props.queryParts.path;
   const isSingleAlbumMode = !_helper.isNullOrEmpty(hPath);
 
   useEffect(() => {
-    setLoadingSt({
-      loading: true,
+    setOpStatus(prev => ({
+      ...prev,
+      apiLoading: true,
       message: 'Loading Albums...'
-    });
+    }));
 
     axiosA.get<KeyValuePair<number,string>[]>(_uri.GetUpscalers())
       .then((response) => {
@@ -67,19 +73,21 @@ export default function ScCorrection(props: IScCorrectionProps) {
           notif.apiError(error);
         })
         .finally(() => {
-          setLoadingSt({
-            loading: false,
+          setOpStatus(prev => ({
+            ...prev,
+            apiLoading: false,
             message: 'Albums loaded'
-          });
+          }));
         });
     }
   },[]);
 
   function fullScan(){
-    setLoadingSt({
-      loading: true,
+    setOpStatus(prev => ({
+      ...prev,
+      apiLoading: true,
       message: 'Scanning the library for correctable pages...'
-    });
+    }));
 
     axiosA.post<PathCorrectionModel[]>(_uri.ScFullScanCorrectiblePaths(), { }, { params:{thread:selectedThread, upscaleTarget:selectedRes } })
       .then((response) => {
@@ -89,10 +97,11 @@ export default function ScCorrection(props: IScCorrectionProps) {
         notif.apiError(error);
       })
       .finally(() => {
-        setLoadingSt({
-          loading: false,
+        setOpStatus(prev => ({
+          ...prev,
+          apiLoading: false,
           message: 'Library scan finished'
-        });
+        }));
       });
   }
 
@@ -111,10 +120,11 @@ export default function ScCorrection(props: IScCorrectionProps) {
   function reloadFileToCorrect(path: string | null, thread: number, res: number, clampToTarget: boolean) {
     if(!path) return;
 
-    setLoadingSt({
-      loading: true,
+    setOpStatus(prev => ({
+      ...prev,
+      apiLoading: true,
       message: 'Loading files...'
-    });
+    }));
 
     const type = isSingleAlbumMode ? 0 : 1;
 
@@ -137,10 +147,11 @@ export default function ScCorrection(props: IScCorrectionProps) {
         notif.apiError(error);
       })
       .finally(() => {
-        setLoadingSt({
-          loading: false,
+        setOpStatus(prev => ({
+          ...prev,
+          apiLoading: false,
           message: 'Files loaded'
-        });
+        }));
       });
   }
 
@@ -164,10 +175,11 @@ export default function ScCorrection(props: IScCorrectionProps) {
       return;
     }
 
-    setLoadingSt({
-      loading: true,
-      message: 'Performing correction on files...'
-    });
+    setOpStatus(prev => ({
+      ...prev,
+      apiLoading: true,
+      message: 'Fetching operation id for queued files...'
+    }));
 
     const param: CorrectPageParam = {
       type: type,
@@ -175,21 +187,62 @@ export default function ScCorrection(props: IScCorrectionProps) {
       thread: selectedThread,
       upscalerType: selectedUpscaler,
       fileToCorrectList: fileToCorrect,
-      toJpeg: toJpeg,
+      toWebp: toWebp,
     };
 
-    axiosA.post<FileCorrectionReportModel[]>(_uri.CorrectPages(), param)
-      .then((response) => {
-        setReports(response.data);
-      })
-      .catch((error) => {
-        notif.apiError(error);
-      })
-      .finally(() => {
-        setLoadingSt({
-          loading: false,
-          message: 'Correction finished'
+    axiosA.post<string>(_uri.CorrectPagesSignalr(), param)
+      .then(async (response) => {
+        setOpStatus({
+          apiLoading: false,
+          ongoingOperation: true,
+          message: `Correction ongoing with Id: ${response.data}`
         });
+
+        const connection = new signalR.HubConnectionBuilder()
+          .withUrl(_uri.ProgressHub(), {
+            withCredentials: false
+          })
+          .configureLogging(signalR.LogLevel.Information)
+          .build();
+
+        connection.on("ReceiveProgress", (message: SignalrMessage<FileCorrectionReportModel>) => {
+          //console.log('ReceiveProgress', message);
+          if(message.messageType === SignalrMessageType.Progress){
+            setReports(prev => {
+              return [...prev, message.data!];
+            });
+          }
+          else if(message.messageType === SignalrMessageType.Complete || message.messageType === SignalrMessageType.Error){
+            setOpStatus(prev => ({ 
+              ...prev, 
+              ongoingOperation: false,
+              message: message.message ?? ''
+            }));
+
+            connection.stop();
+          }
+        });
+
+        try{
+          await connection.start();
+
+          await connection.invoke("JoinOperationGroup", response.data);
+        }
+        catch (err) {
+          setOpStatus(prev => ({ 
+            ...prev,
+            ongoingOperation: false,
+            message: `Error occured ${JSON.stringify(err)}` 
+          }));
+        }
+      }).catch((error) => {
+        notif.apiError(error);
+
+        setOpStatus(prev => ({ 
+          ...prev, 
+          apiLoading: false,
+          message: `Error occured ${JSON.stringify(error)}`
+        }));
       });
   }
 
@@ -211,7 +264,9 @@ export default function ScCorrection(props: IScCorrectionProps) {
 
           return(
             <FileDisplay
+              key={a.alRelPath}
               file={a}
+              ongoingOperation={opStatus.ongoingOperation}
               report={report}
             />
           );
@@ -219,6 +274,8 @@ export default function ScCorrection(props: IScCorrectionProps) {
       </div>
     );
   }, [fileToCorrectSorted, reports]);
+
+  const somethingOngoing = opStatus.apiLoading || opStatus.ongoingOperation;
 
   return (
     <Space direction='vertical' style={{width:'100%'}}>
@@ -230,7 +287,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
               options={upscaleOptionDisplay}
               value={selectedPath}
               onSelect={value => { setSelectedPath(value); }}
-              disabled={loadingSt.loading || isSingleAlbumMode}
+              disabled={somethingOngoing || isSingleAlbumMode}
             />
           </div>
           <div style={{width:'8px'}}></div>
@@ -238,7 +295,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
             <Checkbox 
               checked={limitToCorrectablePath} 
               onChange={(e) => setLimitToCorrectablePath(e.target.checked)}
-              disabled={loadingSt.loading || isSingleAlbumMode}
+              disabled={somethingOngoing || isSingleAlbumMode}
             >
               Limit
             </Checkbox>
@@ -247,7 +304,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
           <div style={{flex:'1', maxWidth:'120px'}}>
             <Button 
               style={{width:'100%'}} onClick={fullScan}
-              disabled={loadingSt.loading || isSingleAlbumMode}
+              disabled={somethingOngoing || isSingleAlbumMode}
             >
               Full Scan
             </Button>
@@ -260,7 +317,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
             style={{width:'100%'}}
             options={upscalerOptions}
             value={selectedUpscaler} onChange={val => setSelectedUpscaler(val)}
-            disabled={loadingSt.loading}
+            disabled={somethingOngoing}
           />
         </div>
         <div style={{width:'8px'}}></div>
@@ -269,7 +326,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
             style={{width:'100%'}}
             options={_constant.threadOptions}
             value={selectedThread} onChange={val => setSelectedThread(val)}
-            disabled={loadingSt.loading}
+            disabled={somethingOngoing}
           />
         </div>
         <div style={{width:'8px'}}></div>
@@ -278,7 +335,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
             style={{width:'100%'}}
             options={_constant.resOptions}
             value={selectedRes} onChange={val => setSelectedRes(val)}
-            disabled={loadingSt.loading}
+            disabled={somethingOngoing}
           />
         </div>
         <div style={{width:'8px'}}></div>
@@ -286,7 +343,7 @@ export default function ScCorrection(props: IScCorrectionProps) {
           <Checkbox 
             checked={clampToTarget} 
             onChange={(e) => setClampToTarget(e.target.checked)}
-            disabled={loadingSt.loading}
+            disabled={somethingOngoing}
           >
             Clamp
           </Checkbox>
@@ -294,31 +351,31 @@ export default function ScCorrection(props: IScCorrectionProps) {
         <div style={{width:'8px'}}></div>
         <div style={{flex:'1', maxWidth:'120px', display: 'flex', alignItems: 'center', paddingLeft:'12px'}}>
           <Checkbox 
-            checked={toJpeg} 
-            onChange={(e) => setToJpeg(e.target.checked)}
-            disabled={loadingSt.loading}
+            checked={toWebp} 
+            onChange={(e) => setToWebp(e.target.checked)}
+            disabled={somethingOngoing}
           >
-            To Jpeg
+            To Webp
           </Checkbox>
         </div>
         <div style={{width:'8px'}}></div>
         <div style={{flex:'1', maxWidth:'120px'}}>
           <Button 
             style={{width:'100%'}} onClick={handleSubmit}
-            disabled={loadingSt.loading}>
+            disabled={somethingOngoing}>
             Submit
           </Button>
         </div>
       </div>
-      {!_helper.isNullOrEmpty(loadingSt.message) &&
+      {!_helper.isNullOrEmpty(opStatus.message) &&
         <Alert 
           message={
             <div>
-              {loadingSt.loading && <LoadingOutlined style={{marginRight:'8px'}} /> }
-              {loadingSt.message}
+              {somethingOngoing && <LoadingOutlined style={{marginRight:'8px'}} /> }
+              {opStatus.message}
             </div>
           }
-          type={loadingSt.loading ? 'warning' : 'info'} 
+          type={somethingOngoing ? 'warning' : 'info'} 
         />
       }
       <div style={{width:'100%', display:'flex', ...contentPad}}>
@@ -343,17 +400,26 @@ export default function ScCorrection(props: IScCorrectionProps) {
 
 function FileDisplay(props:{
   file: FileCorrectionModel,
+  ongoingOperation: boolean,
   report?: FileCorrectionReportModel
 }){
 
   const { file, report } = props;
   
   return (
-    <div style={{width:'100%'}} key={file.alRelPath}>
+    <div style={{width:'100%'}}>
       <div className='divider-4'></div>
       <div style={{width:'100%', display: 'flex', ...contentPad}}>
         <div style={{flex:'2'}}><Text>{file.alRelPath}</Text></div>
         <div style={{width:'220px', display:'flex'}}>
+          <div style={{width: '30px'}}>
+            {props.ongoingOperation && report == null 
+              ? <LoadingOutlined />
+              : report == null
+              ? <></>
+              : <Tag color={report?.success ? 'blue' : 'red'}>{report?.success ? 'S' : 'F'}</Tag>
+            }
+          </div>
           <div style={{width:'30px'}}>
             {file.correctionType === 1 
               ? <Tag color="green">U</Tag> 

@@ -6,6 +6,9 @@ public class FileInfoModel
 {
     public required string Name { get; set; }
     public string? Extension { get; set; }
+    /// <summary>
+    /// In some uses, this path is actually AlRelPath
+    /// </summary>
     public required string LibRelPath { get; set; }
 
     public long Size { get; set; }

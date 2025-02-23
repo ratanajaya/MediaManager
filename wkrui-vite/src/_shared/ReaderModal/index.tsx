@@ -23,7 +23,7 @@ export default function ReaderModal(props: {
   type: 0 | 1,
   onOpenEditModal: () => void,
   onChapterDeleteSuccess: (path: string, val: number) => void,
-  onClose: (path: string, lpi: number) => void
+  onClose: (path: string, lpi: number, lparp: string | null) => void
 }) {
   const { axiosA } = useAuth();
   const { notif } = useNotification();
@@ -72,9 +72,15 @@ export default function ReaderModal(props: {
 
     axiosA.get<AlbumFsNodeInfo>(_uri.GetAlbumFsNodeInfo(props.type, props.albumCm.path, includeDetail, includeDetail))
       .then(function (response) {
+        const idxFromLastLibRelPath = props.albumCm!.lastPageAlRelPath != null 
+          ? _helper.getFlatFileInfosFromFsNodes(response.data.fsNodes).findIndex(a => a.libRelPath === props.albumCm!.lastPageAlRelPath)
+          : -1;
+
         setApm({
           path: props.albumCm!.path,
-          lpi: restartPage ? 0 : props.albumCm!.lastPageIndex,
+          lpi: restartPage ? 0 
+            : idxFromLastLibRelPath !== -1 ? idxFromLastLibRelPath
+            : props.albumCm!.lastPageIndex,
           orientation: response.data.orientation,
           fsNodes: response.data.fsNodes,
           indexes: _constant.defaultIndexes,
@@ -174,21 +180,9 @@ export default function ReaderModal(props: {
         detailLevel: apm.detailLevel,
         fsNodes: apm.fsNodes
       });
-
-      if (apm.path !== "" && page === fileCount - 1 && props.type !== 1) {
-        axiosA.post(_uri.UpdateAlbumOuterValue(props.type), {
-          albumPath: apm.path,
-          lastPageIndex: page
-        })
-          .then((response) => {
-          })
-          .catch((error) => {
-            notif.apiError(error);
-          });
-      }
     },
     close: () => {
-      props.onClose(apm.path, apm.indexes.cPageI);
+      props.onClose(apm.path, apm.indexes.cPageI, pages[apm.indexes.cPageI]?.libRelPath ?? null);
     },
   };
 

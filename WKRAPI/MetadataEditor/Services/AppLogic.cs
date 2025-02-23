@@ -176,8 +176,9 @@ public class AppLogic(
         return src;
     }
 
+    //Warning: Duplicate logic with OperationService.CorrectPages
     public async Task<(List<FileDisplayModel>, FileCorrectionReportModel[])> CorrectPages(string rootPath, List<FileCorrectionModel> fileToCorrectList, int upscaleTarget, bool clampToTarget, IProgress<string> progress) {
-        var trueThread = 2;
+        var trueThread = 1;
         var upscalerType = UpscalerType.Waifu2xCunet;
 
         var fileCount = fileToCorrectList.Count;
@@ -235,7 +236,7 @@ public class AppLogic(
         await Parallel.ForAsync(0, fileCount, new ParallelOptions { MaxDegreeOfParallelism = trueThread }, async (i, state) => {
             var messageSb = new StringBuilder();
             var src = fileList[i];
-            var toJpegExcludingWebp = src.Extension == Constants.Extension.Webp ? false : true;
+            var toWebp = true;
             try {
                 if(src.CorrectionType == null) {
                     report[i] = new() {
@@ -251,7 +252,7 @@ public class AppLogic(
                 var processorApiParam = new UpscaleCompressApiParam {
                     UpscaleMultiplier = src.UpscaleMultiplier,
                     UpscalerType = upscalerType,
-                    ToJpeg = toJpegExcludingWebp,
+                    ToWebp = toWebp,
 
                     CorrectionType = src.CorrectionType.Value,
                     Compression = src.Compression,
@@ -259,7 +260,7 @@ public class AppLogic(
                 };
 
                 var fullOriPath = Path.Combine(rootPath, src.AlRelPath!);
-                var fullDstPath = toJpegExcludingWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.jpeg" : fullOriPath;
+                var fullDstPath = toWebp ? $"{Path.Combine(Path.GetDirectoryName(fullOriPath)!, Path.GetFileNameWithoutExtension(fullOriPath))}.webp" : fullOriPath;
 
                 using(var client = new HttpClient())
                 using(var form = new MultipartFormDataContent()) {
@@ -325,6 +326,7 @@ public class AppLogic(
         return (displayModelForSuccessFiles, report);
     }
 
+    //Warning: Duplicate logic with OperationService.GetCorrectablePages
     private FileCorrectionModel GetFileCorrectionModel(string filePath, string folderPath, int upscaleTarget, bool clampToTarget) {
         var fileInfo = new FileInfo(filePath);
 
@@ -342,28 +344,34 @@ public class AppLogic(
             return newFcm;
 
         using(var img = SixLabors.ImageSharp.Image.Load(fileInfo.FullName)) {
+            newFcm.IsAnimated = img.Frames.Count > 1;
             newFcm.Height = img.Height;
             newFcm.Width = img.Width;
 
-            float? multiplier = ImageHelper.DetermineUpscaleMultiplier(newFcm, upscaleTarget);
-            if(multiplier.HasValue) {
-                newFcm.CorrectionType = FileCorrectionType.Upscale;
-                newFcm.UpscaleMultiplier = multiplier;
-                newFcm.Compression = ImageHelper.DetermineCompressionCondition(
-                    (int)(multiplier.Value * newFcm.Height),
-                    (int)(multiplier.Value * newFcm.Width),
-                    newFcm.Extension == Constants.Extension.Png,
-                    clampToTarget ? upscaleTarget : null
-                );
+            if(newFcm.IsAnimated) {
+                newFcm.CorrectionType = null;
             }
-            else if(ImageHelper.IsLargeEnoughForCompression(newFcm)) {
-                newFcm.CorrectionType = FileCorrectionType.Compress;
-                newFcm.Compression = ImageHelper.DetermineCompressionCondition(
-                    newFcm.Height,
-                    newFcm.Width,
-                    newFcm.Extension == Constants.Extension.Png,
-                    null //Don't clamp to target if compression is the only operation
-                );
+            else {
+                float? multiplier = ImageHelper.DetermineUpscaleMultiplier(newFcm, upscaleTarget);
+                if(multiplier.HasValue) {
+                    newFcm.CorrectionType = FileCorrectionType.Upscale;
+                    newFcm.UpscaleMultiplier = multiplier;
+                    newFcm.Compression = ImageHelper.DetermineCompressionCondition(
+                        (int)(multiplier.Value * newFcm.Height),
+                        (int)(multiplier.Value * newFcm.Width),
+                        newFcm.Extension == Constants.Extension.Png,
+                        clampToTarget ? upscaleTarget : null
+                    );
+                }
+                else if(ImageHelper.IsLargeEnoughForCompression(newFcm)) {
+                    newFcm.CorrectionType = FileCorrectionType.Compress;
+                    newFcm.Compression = ImageHelper.DetermineCompressionCondition(
+                        newFcm.Height,
+                        newFcm.Width,
+                        newFcm.Extension == Constants.Extension.Png,
+                        null //Don't clamp to target if compression is the only operation
+                    );
+                }
             }
 
             return newFcm;

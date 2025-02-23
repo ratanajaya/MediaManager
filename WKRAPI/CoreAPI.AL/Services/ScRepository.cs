@@ -43,7 +43,8 @@ public class ScRepository(
 
         var newScMetadata = new ScMetadataModel {
             Path = albumPath,
-            LastPageIndex = 0
+            LastPageIndex = 0,
+            LastPageAlRelPath = null
         };
         _scDb.ScMetadatas.Add(newScMetadata);
         SaveChanges();
@@ -88,10 +89,13 @@ public class ScRepository(
                 .Select(e => {
                     var libRelAlbumPath = Path.GetRelativePath(_config.ScLibraryPath, e);
                     var filePaths = _io.GetSuitableFilePathsWithNaturalSort(e, _ai.SuitableFileFormats, 1);
+                    var metadata = GetScAlbumMetadata(libRelAlbumPath);
+
                     return new ScAlbumVM {
                         Name = Path.GetFileName(e),
                         LibRelPath = libRelAlbumPath,
-                        LastPageIndex = GetScAlbumMetadata(libRelAlbumPath).LastPageIndex,
+                        LastPageIndex = metadata.LastPageIndex,
+                        LastPageAlRelPath = metadata.LastPageAlRelPath,
                         PageCount = isSubdirsAlbum ? filePaths.Count : 0,
                         CoverInfo = GetCoverInfo(filePaths.FirstOrDefault())
                     };
@@ -261,11 +265,12 @@ public class ScRepository(
         }
     }
 
-    public void UpdateAlbumOuterValue(string albumPath, int lastPageIndex) {
+    public void UpdateAlbumOuterValue(string albumPath, int lastPageIndex, string? lastPageAlRelPath) {
         try {
             var scMetadata = GetScAlbumMetadata(albumPath);
 
             scMetadata.LastPageIndex = lastPageIndex;
+            scMetadata.LastPageAlRelPath = lastPageAlRelPath;
 
             SaveChanges();
         }

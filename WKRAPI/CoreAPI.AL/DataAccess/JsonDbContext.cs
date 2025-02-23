@@ -99,8 +99,13 @@ public class JsonDbContext(
     private async Task<List<AlbumVM>> LoadAlbumVMsRecursive(string folderPath) {
         var result = new List<AlbumVM>();
 
-        if(_io.IsFileExists(Path.Combine(folderPath, Constants.FileSystem.JsonFileName))) {
-            var album = await _io.DeserializeJson<Album>(Path.Combine(folderPath, Constants.FileSystem.JsonFileName));
+        var metadataFilePath = Path.Combine(folderPath, Constants.FileSystem.JsonFileName);
+
+        if(_io.IsFileExists(metadataFilePath)) {
+            var album = await _io.DeserializeJson<Album>(metadataFilePath);
+
+            if(album == null)
+                throw new Exception("Unable to deserialize into album: " + metadataFilePath);
 
             var suitableFilePaths = _io.GetSuitableFilePaths(folderPath, _ai.SuitableFileFormats, 1);
 
@@ -110,6 +115,7 @@ public class JsonDbContext(
                 Path = Path.GetRelativePath(_config.LibraryPath, folderPath),
                 PageCount = suitableFilePaths.Count,
                 LastPageIndex = 0,
+                LastPageAlRelPath = null,
                 CoverInfo = coverInfo,
                 Album = album
             });
@@ -160,7 +166,10 @@ public class JsonDbContext(
 
         var newAlbumVms = await LoadAlbumVMs(true);
         _albumVMs = newAlbumVms.Select(a => {
-            a.LastPageIndex = (oldAlbumVMs.Get(a.Path)?.LastPageIndex).GetValueOrDefault();
+            var oldAlbumVM = oldAlbumVMs.GetOrDefault(a.Path);
+
+            a.LastPageIndex = (oldAlbumVM?.LastPageIndex).GetValueOrDefault();
+            a.LastPageAlRelPath = oldAlbumVM?.LastPageAlRelPath;
             return a;
         }).ToList();
 

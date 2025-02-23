@@ -191,7 +191,7 @@ class Program
                         Thread = thread,
                         Type = 0,
                         UpscalerType = SharedLibrary.UpscalerType.Waifu2xCunet,
-                        ToJpeg = true
+                        ToWebp = true
                     });
 
                     correctionSw.Stop();
@@ -245,7 +245,7 @@ class Program
                     Thread = thread,
                     Type = 1,
                     UpscalerType = SharedLibrary.UpscalerType.Waifu2xCunet,
-                    ToJpeg = false
+                    ToWebp = false
                 });
 
                 correctionSw.Stop();

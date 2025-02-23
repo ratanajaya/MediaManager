@@ -102,9 +102,31 @@ public static class ImageHelper
     }
 
     private static int DetermineQuality(int shorterSide, bool isPng) {
-        return shorterSide > ImageHelper.maxShorterSide ? (isPng ? 70 : 90)
-            : shorterSide >= ImageHelper.medShorterSide ? (isPng ? 80 : 90)
-            : (isPng ? 90 : 95);
+        return isPng 
+            ? DetermineQualityPng(shorterSide) 
+            : DetermineQualityNonPng(shorterSide);
+    }
+
+    private static int DetermineQualityPng(int shorterSide) {
+        // Linear interpolation between maxShorterSide (70) and lowShorterSide (90)
+        double outputMin = 70;
+        double outputMax = 90;
+
+        // Scale the input value to the range of the output value using a linear equation
+        double linearResult = outputMin + (outputMax - outputMin) * (ImageHelper.maxShorterSide - shorterSide) / (ImageHelper.maxShorterSide - ImageHelper.lowShorterSide);
+
+        return Math.Clamp((int)linearResult, 70, 90);
+    }
+
+    private static int DetermineQualityNonPng(int shorterSide) {
+        // Linear interpolation between medShorterSide (90) and lowShorterSide (95)
+        double outputMin = 90;
+        double outputMax = 95;
+
+        // Scale the input value to the range of the output value using a linear equation
+        double linearResult = outputMin + (outputMax - outputMin) * (ImageHelper.medShorterSide - shorterSide) / (ImageHelper.medShorterSide - ImageHelper.lowShorterSide);
+
+        return Math.Clamp((int)linearResult, 90, 95);
     }
 
     private static (int, int) ClampHeightWidth(int height, int width, int target) {

@@ -81,6 +81,7 @@ public class CensorshipService(
             Path = source.Path.DiskCensor(),
             CoverInfo = CensorFileInfo(source.CoverInfo),
             LastPageIndex = source.LastPageIndex,
+            LastPageAlRelPath = source.LastPageAlRelPath?.DiskCensor(),
             PageCount = source.PageCount
         };
     }

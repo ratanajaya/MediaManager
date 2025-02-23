@@ -153,9 +153,10 @@ public class MainController(
             Tier = a.Album.Tier,
             Note = a.Album.Note,
             LastPageIndex = a.LastPageIndex,
+            LastPageAlRelPath = a.LastPageAlRelPath,
             PageCount = a.PageCount,
             EntryDate = a.Album.EntryDate,
-            HasSource = a.Album.Sources.Any(),
+            HasSource = a.Album.Sources.Count != 0,
             CoverInfo = a.CoverInfo
         })
         .ToList();
@@ -177,7 +178,7 @@ public class MainController(
         if(_config.IsPublic || _cs.IsCensorshipOn()) return Ok();
 
         param.LastPageIndex = _config.IsPublic ? 0 : param.LastPageIndex;
-        return Ok(_library.UpdateAlbumOuterValue(param.AlbumPath, param.LastPageIndex));
+        return Ok(_library.UpdateAlbumOuterValue(param.AlbumPath, param.LastPageIndex, param.LastPageAlRelPath));
     }
 
     [HttpPut]

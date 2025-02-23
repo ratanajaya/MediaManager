@@ -26,12 +26,12 @@ public interface ILogDbContext
     List<CrudLog> GetDeleteLogs(string? query);
     DateTime? GetLastCorrectionTime(string path);
     TablePaginationModel<CrudLog> GetLogs(int page, int row, string? operation, string? freeText, DateTime? startDate, DateTime? endDate);
-    void InsertAlbumCorrection(AlbumCorrection ac);
+    void UpsertAlbumCorrection(AlbumCorrection ac);
     void InsertComments(List<Comment> comments);
     void InsertCrudLog(string operation, AlbumVM avm);
     void Devtool_OneTimeOperation();
     void UpdateComments(List<Comment> comments);
-    void UpdateCorrectionLog(string path, DateTime? correctionDate, int correctablePageCount);
+    void UpsertCorrectionLog(string path, DateTime? correctionDate, int correctablePageCount);
 }
 
 public class LogDbContext(
@@ -140,7 +140,7 @@ public class LogDbContext(
         }
     }
 
-    public void UpdateCorrectionLog(string path, DateTime? correctionDate, int correctablePageCount) {
+    public void UpsertCorrectionLog(string path, DateTime? correctionDate, int correctablePageCount) {
         using(var db = new SQLiteConnection(_config.FullLogDbPath)) {
             var cl = db.Table<CorrectionLog>().FirstOrDefault(a => a.Path == path);
 
@@ -198,9 +198,18 @@ public class LogDbContext(
         }
     }
 
-    public void InsertAlbumCorrection(AlbumCorrection ac) {
+    public void UpsertAlbumCorrection(AlbumCorrection ac) {
         using(var db = new SQLiteConnection(_config.FullLogDbPath)) {
-            db.Insert(ac);
+            var existing = db.Table<AlbumCorrection>().FirstOrDefault(a => a.LibRelPath == ac.LibRelPath);
+            if(existing != null) { 
+                existing.CorrectedPage = ac.CorrectedPage;
+                existing.CorrectionFinishDate = ac.CorrectionFinishDate;
+                existing.BatchStartDate = ac.BatchStartDate;
+
+                db.Update(existing);
+            }
+            else
+                db.Insert(ac);
         }
     }
 
